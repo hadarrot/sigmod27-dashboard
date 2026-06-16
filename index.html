@@ -260,9 +260,10 @@ const CFG={displayModeBar:false,responsive:true,scrollZoom:false,doubleClick:fal
 const base={paper_bgcolor:'#1a212b',plot_bgcolor:'#1a212b',font:{color:'#e6edf3',family:'Inter'},
   margin:{l:62,r:18,t:8,b:46},legend:{orientation:'h',y:1.13},hovermode:'x unified',dragmode:false,
   xaxis:{tickvals:xs,ticktext:KS,title:'path length k',gridcolor:'#2b3949',fixedrange:true}};
-const TO_LOG=Math.log10(60000);  // 60s timeout ceiling, in log10(ms) for the log y-axes
+const TO_MS=60000;               // 60s timeout ceiling. Plotly log-axis quirk:
+const TO_LOG=Math.log10(TO_MS);  // shapes take the RAW value, annotations take log10.
 function toMarker(show){
-  return show?{shapes:[{type:'line',xref:'paper',x0:0,x1:1,y0:TO_LOG,y1:TO_LOG,line:{color:'#ff6b6b',width:1.2,dash:'dot'}}],
+  return show?{shapes:[{type:'line',xref:'paper',x0:0,x1:1,y0:TO_MS,y1:TO_MS,line:{color:'#ff6b6b',width:1.2,dash:'dot'}}],
     annotations:[{xref:'paper',x:0.012,y:TO_LOG,text:'T.O. (60 s)',showarrow:false,xanchor:'left',yanchor:'bottom',font:{color:'#ff6b6b',size:11}}]}
    :{shapes:[],annotations:[]};
 }
@@ -304,7 +305,7 @@ function draw(){
   Plotly.react('qplot',['native','EAN','leveled'].map(a=>({x:xs,y:q[a],mode:'lines+markers',name:a,connectgaps:false,line:{color:C[a],width:2.4},marker:{size:6}})),
     Object.assign({},base,{shapes:toQ.shapes,annotations:toQ.annotations,yaxis:{title:'query time (ms, log)',type:'log',dtick:1,tickformat:'~s',gridcolor:'#2b3949',fixedrange:true}}),CFG);
   const s=run.speedup[n], tk=run.nat_to_k[n];
-  const shapes=[{type:'line',x0:-0.4,x1:KS.length-0.6,y0:0,y1:0,line:{color:'#ffd43b',width:1.4,dash:'dash'}}], ann=[];
+  const shapes=[{type:'line',x0:-0.4,x1:KS.length-0.6,y0:1,y1:1,line:{color:'#ffd43b',width:1.4,dash:'dash'}}], ann=[];
   if(tk!==null&&tk!==undefined){const i=KS.indexOf(tk);
     shapes.push({type:'rect',x0:i-0.5,x1:KS.length-0.5,y0:0,y1:1,yref:'paper',fillcolor:'rgba(255,107,107,0.10)',line:{width:0}});
     ann.push({x:i+(KS.length-1-i)/2,y:0.93,yref:'paper',text:'native T.O. → ∞',showarrow:false,font:{color:'#ff6b6b',size:11}});}
