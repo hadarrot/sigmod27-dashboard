@@ -150,8 +150,8 @@
   succeeded. Times are trimmed means / medians of 10 cold runs.
 </footer>
 
-<script src="data.js"></script>
 <script>
+function initDashboard(){
 const C={native:'#ff6b6b',EAN:'#4dabf7',leveled:'#51cf66'};
 const KS=DATA.ks, xs=KS.map((_,i)=>i);
 let metric='qmean';
@@ -213,6 +213,13 @@ document.querySelectorAll('#metric button').forEach(b=>b.onclick=()=>{
   metric=b.dataset.m;document.querySelectorAll('#metric button').forEach(x=>x.classList.toggle('on',x===b));draw();});
 document.getElementById('btc').innerHTML='⏳ TODO — '+DATA.bitcoin.datasets.join(' &nbsp;·&nbsp; ');
 coverage(); draw();
+}
+// load data.js cache-busted so the browser never shows a stale copy (incl. after auto-updates)
+var _s=document.createElement('script');
+_s.src='data.js?t='+Date.now();
+_s.onload=initDashboard;
+_s.onerror=function(){document.getElementById('qplot').innerHTML='<div class="todo">Failed to load data.js</div>';};
+document.head.appendChild(_s);
 </script>
 </body>
 </html>
