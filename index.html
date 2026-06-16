@@ -136,7 +136,7 @@
         </div>
         <div class="card">
           <h3>Query time vs path length <span id="ctx" style="color:var(--mut);font-weight:400;font-size:13px"></span></h3>
-          <p>Native explodes with k and times out (line ends); the transforms stay flat across all k — even unbounded.</p>
+          <p>Native explodes with k and times out — its line climbs to the dashed T.O. (60 s) line; the transforms stay flat across all k, even unbounded.</p>
           <div id="qplot" class="plot"></div>
         </div>
         <div class="grid">
@@ -275,11 +275,13 @@ function setTodo(id){const e=document.getElementById(id);e.className='nodata';e.
 
 const Nlabels=DATA.ns.map(n=>n.toLocaleString());
 function reachIdx(arr){for(let i=arr.length-1;i>=0;i--){if(arr[i]!=null)return i;}return -1;}
+// at the first timed-out point, plant a value on the T.O. ceiling so the line climbs to 60s (VLDB26 style)
+function withCeiling(arr){const a=arr.slice();for(let i=0;i<a.length;i++){if(a[i]==null){a[i]=TO_MS;break;}}return a;}
 function drawScaling(run){
   const ki=KS.indexOf(document.getElementById('ksel').value);
   const toS=toMarker(DATA.ns.some(n=>run.qmean[String(n)].native[ki]==null));
   Plotly.react('scplot',['native','EAN','leveled'].map(a=>({x:Nlabels,
-     y:DATA.ns.map(n=>run[metric][String(n)][a][ki]),mode:'lines+markers',name:a,connectgaps:false,
+     y:withCeiling(DATA.ns.map(n=>run[metric][String(n)][a][ki])),mode:'lines+markers',name:a,connectgaps:false,
      line:{color:C[a],width:2.4},marker:{size:6}})),
     {paper_bgcolor:'#1a212b',plot_bgcolor:'#1a212b',font:{color:'#e6edf3',family:'Inter'},margin:{l:62,r:18,t:8,b:46},
      legend:{orientation:'h',y:1.13},hovermode:'x unified',dragmode:false,shapes:toS.shapes,annotations:toS.annotations,
@@ -302,7 +304,7 @@ function draw(){
   drawScaling(run); drawReach(run);
   const q=run[metric][n];
   const toQ=toMarker(run.nat_to_k[n]!=null);
-  Plotly.react('qplot',['native','EAN','leveled'].map(a=>({x:xs,y:q[a],mode:'lines+markers',name:a,connectgaps:false,line:{color:C[a],width:2.4},marker:{size:6}})),
+  Plotly.react('qplot',['native','EAN','leveled'].map(a=>({x:xs,y:withCeiling(q[a]),mode:'lines+markers',name:a,connectgaps:false,line:{color:C[a],width:2.4},marker:{size:6}})),
     Object.assign({},base,{shapes:toQ.shapes,annotations:toQ.annotations,yaxis:{title:'query time (ms, log)',type:'log',dtick:1,tickformat:'~s',gridcolor:'#2b3949',fixedrange:true}}),CFG);
   const s=run.speedup[n], tk=run.nat_to_k[n];
   const shapes=[{type:'line',x0:-0.4,x1:KS.length-0.6,y0:1,y1:1,line:{color:'#ffd43b',width:1.4,dash:'dash'}}], ann=[];
