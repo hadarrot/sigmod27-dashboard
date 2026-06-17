@@ -86,6 +86,14 @@
   pre.qry{background:#0b0f14;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0;
     font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;color:#cdd6e0;
     white-space:pre-wrap;line-height:1.55;overflow-x:auto}
+  .sptable{overflow-x:auto;padding:2px 4px 8px}
+  table.sp{border-collapse:collapse;font-size:12px;margin:6px 0}
+  table.sp th{color:var(--mut);font-weight:600;padding:5px 8px;text-align:center;white-space:nowrap}
+  table.sp td{padding:5px 9px;text-align:center;border:1px solid var(--bg);min-width:46px;
+    color:#0b0f14;font-weight:600;font-variant-numeric:tabular-nums}
+  table.sp tr.grouphdr td{background:transparent;color:var(--ean);font-family:'Space Grotesk';
+    font-weight:600;text-align:left;padding:12px 8px 3px;border:0;font-size:13px}
+  table.sp th.rowh{color:#cdd6e0;text-align:right;padding-right:12px}
 </style>
 </head>
 <body>
@@ -162,6 +170,11 @@
             <p>How far each approach gets before a query times out. Native's reach shrinks as the graph grows; the transforms reach unbounded throughout.</p>
             <div id="rplot" class="plot"></div>
           </div>
+        </div>
+        <div class="card">
+          <h3>Speedup table (per cell)</h3>
+          <p>Exact per-cell outcome, like the paper's speedup table. <b>Green</b> = transform wins (&gt;1), <b>red</b> = Native wins (&lt;1), <b style="color:#51cf66">∞</b> = Native timed out / transform succeeded, <b style="color:#ffd43b">T.O.</b> = both timed out, <b style="color:#c56cff">OOM</b> = ran out of memory. <code>A+B</code> = transform+Native outcome.</p>
+          <div id="sptable" class="sptable"></div>
         </div>
       </section>
 
@@ -356,12 +369,37 @@ function drawReach(run){
      xaxis:{title:'N (nodes)',type:'category',gridcolor:'#2b3949',fixedrange:true},
      yaxis:{title:'max reachable k',tickvals:xs,ticktext:KS,range:[-0.5,KS.length-0.5],gridcolor:'#2b3949',fixedrange:true}},CFG);
 }
+function cellColor(lbl){
+  const v=parseFloat(lbl);
+  if(!isNaN(v)&&lbl!=='∞'){
+    if(v>=1){const t=Math.min(1,Math.log10(v)/2);return ['rgba(81,207,102,'+(0.18+0.5*t).toFixed(2)+')','#0b0f14'];}
+    const t=Math.min(1,-Math.log10(v)/2);return ['rgba(255,107,107,'+(0.18+0.5*t).toFixed(2)+')','#0b0f14'];
+  }
+  if(lbl==='∞') return ['rgba(81,207,102,0.55)','#0b0f14'];     // native T.O., transform wins
+  const first=lbl.split('+')[0];                                 // transform's own outcome
+  if(first.indexOf('OOM')>=0) return ['rgba(197,108,255,0.45)','#ffffff'];   // OOM
+  return ['rgba(255,212,59,0.42)','#0b0f14'];                    // T.O. (both timed out)
+}
+function drawTable(run){
+  let h='<table class="sp"><tr><th class="rowh">N \\ k</th>'+KS.map(k=>'<th>'+k+'</th>').join('')+'</tr>';
+  ['EAN','leveled'].forEach(a=>{
+    h+='<tr class="grouphdr"><td colspan="'+(KS.length+1)+'">'+a+'</td></tr>';
+    DATA.ns.forEach(n=>{
+      const row=(run.label[String(n)]||{})[a]||[];
+      h+='<tr><th class="rowh">'+Number(n).toLocaleString()+'</th>';
+      KS.forEach((k,i)=>{const l=row[i];if(!l){h+='<td></td>';return;}const c=cellColor(l);
+        h+='<td style="background:'+c[0]+';color:'+c[1]+'">'+l+'</td>';});
+      h+='</tr>';
+    });
+  });
+  document.getElementById('sptable').innerHTML=h+'</table>';
+}
 function draw(){
   const run=DATA.runs[key()], n=document.getElementById('nsel').value;
   document.getElementById('ctx').textContent='· '+ENG_META[curEngine].name+' · density '+document.getElementById('den').value+' · N='+Number(n).toLocaleString()+' · '+(metric==='qmean'?'trimmed mean':'median');
   ['qplot','splot','bplot','scplot','rplot'].forEach(id=>{const e=document.getElementById(id);e.className='plot';e.innerHTML='';});
-  if(!run){['qplot','splot','bplot','scplot','rplot'].forEach(setTodo);return;}
-  drawScaling(run); drawReach(run);
+  if(!run){['qplot','splot','bplot','scplot','rplot'].forEach(setTodo);document.getElementById('sptable').innerHTML='';return;}
+  drawScaling(run); drawReach(run); drawTable(run);
   const q=run[metric][n];
   const toQ=toMarker(run.nat_to_k[n]!=null);
   Plotly.react('qplot',['native','EAN','leveled'].map(a=>({x:xs,y:withCeiling(q[a]),mode:'lines+markers',name:a,connectgaps:false,line:{color:C[a],width:2.4},marker:{size:6}})),
