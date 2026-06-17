@@ -150,7 +150,7 @@
         <div class="grid">
           <div class="card">
             <h3>Speedup vs Native (build + query)</h3>
-            <p>&gt;1 = transform wins (incl. build). Dashed line = break-even (=1); shaded band = Native timed out (∞).</p>
+            <p>&gt;1 = transform wins (incl. build). Yellow dashed = break-even (=1). A point at the <b>∞</b> tick = Native timed out & the transform succeeded (transform wins); a point at the <b>T.O.</b> tick = the transform itself timed out / OOM'd. Hover any point for the exact outcome.</p>
             <div id="splot" class="plot"></div>
           </div>
           <div class="card">
@@ -332,7 +332,9 @@ let metric='qmean';
 const CFG={displayModeBar:false,responsive:true,scrollZoom:false,doubleClick:false};
 const base={paper_bgcolor:'#1a212b',plot_bgcolor:'#1a212b',font:{color:'#e6edf3',family:'Inter'},
   margin:{l:62,r:18,t:8,b:46},legend:{orientation:'h',y:1.13},hovermode:'x unified',dragmode:false,
-  xaxis:{tickvals:xs,ticktext:KS,title:'path length k',gridcolor:'#2b3949',fixedrange:true}};
+  xaxis:{tickvals:xs,ticktext:KS,title:'path length k',gridcolor:'#2b3949',fixedrange:true,
+    showline:true,linecolor:'#46586b',linewidth:1,ticks:'outside',tickcolor:'#46586b'}};
+const AXL={showline:true,linecolor:'#46586b',linewidth:1,ticks:'outside',tickcolor:'#46586b'};  // axis-line style
 const TO_MS=60000;               // 60s timeout ceiling. Plotly log-axis quirk:
 const TO_LOG=Math.log10(TO_MS);  // shapes take the RAW value, annotations take log10.
 function toMarker(show){
@@ -350,24 +352,28 @@ const Nlabels=DATA.ns.map(n=>n.toLocaleString());
 function reachIdx(arr){for(let i=arr.length-1;i>=0;i--){if(arr[i]!=null)return i;}return -1;}
 // at the first timed-out point, plant a value on the T.O. ceiling so the line climbs to 60s (VLDB26 style)
 function withCeiling(arr){const a=arr.slice();for(let i=0;i<a.length;i++){if(a[i]==null){a[i]=TO_MS;break;}}return a;}
+function siMs(v){return v>=1000?(v/1000).toFixed(v>=10000?0:1)+'k':(v>=100?String(Math.round(v)):v.toFixed(1));}
+// like withCeiling but also returns hover text: 'T.O.' on the planted ceiling point, '<n> ms' otherwise
+function ceilHover(arr){const y=arr.slice(),t=arr.map(v=>v==null?null:siMs(v)+' ms');
+  for(let i=0;i<y.length;i++){if(y[i]==null){y[i]=TO_MS;t[i]='T.O. (≥60 s)';break;}}return {y:y,t:t};}
 function drawScaling(run){
   const ki=KS.indexOf(document.getElementById('ksel').value);
   const toS=toMarker(DATA.ns.some(n=>run.qmean[String(n)].native[ki]==null));
-  Plotly.react('scplot',['native','EAN','leveled'].map(a=>({x:Nlabels,
-     y:withCeiling(DATA.ns.map(n=>run[metric][String(n)][a][ki])),mode:'lines+markers',name:a,connectgaps:false,
-     line:{color:C[a],width:2.4},marker:{size:6}})),
+  Plotly.react('scplot',['native','EAN','leveled'].map(a=>{const ch=ceilHover(DATA.ns.map(n=>run[metric][String(n)][a][ki]));
+     return {x:Nlabels,y:ch.y,text:ch.t,hovertemplate:'%{fullData.name}: %{text}<extra></extra>',
+     mode:'lines+markers',name:a,connectgaps:false,line:{color:C[a],width:2.4},marker:{size:6}};}),
     {paper_bgcolor:'#1a212b',plot_bgcolor:'#1a212b',font:{color:'#e6edf3',family:'Inter'},margin:{l:62,r:18,t:8,b:46},
      legend:{orientation:'h',y:1.13},hovermode:'x unified',dragmode:false,shapes:toS.shapes,annotations:toS.annotations,
-     xaxis:{title:'N (nodes)',type:'category',gridcolor:'#2b3949',fixedrange:true},
-     yaxis:{title:'query time (ms, log)',type:'log',dtick:1,tickformat:'~s',gridcolor:'#2b3949',fixedrange:true}},CFG);
+     xaxis:Object.assign({title:'N (nodes)',type:'category',gridcolor:'#2b3949',fixedrange:true},AXL),
+     yaxis:Object.assign({title:'query time (ms, log)',type:'log',dtick:1,tickformat:'~s',gridcolor:'#2b3949',fixedrange:true},AXL)},CFG);
 }
 function drawReach(run){
   Plotly.react('rplot',['native','EAN','leveled'].map(a=>({x:Nlabels,
      y:DATA.ns.map(n=>reachIdx(run.qmean[String(n)][a])),type:'bar',name:a,marker:{color:C[a]}})),
     {paper_bgcolor:'#1a212b',plot_bgcolor:'#1a212b',font:{color:'#e6edf3',family:'Inter'},margin:{l:78,r:18,t:8,b:46},
      barmode:'group',dragmode:false,legend:{orientation:'h',y:1.13},
-     xaxis:{title:'N (nodes)',type:'category',gridcolor:'#2b3949',fixedrange:true},
-     yaxis:{title:'max reachable k',tickvals:xs,ticktext:KS,range:[-0.5,KS.length-0.5],gridcolor:'#2b3949',fixedrange:true}},CFG);
+     xaxis:Object.assign({title:'N (nodes)',type:'category',gridcolor:'#2b3949',fixedrange:true},AXL),
+     yaxis:Object.assign({title:'max reachable k',tickvals:xs,ticktext:KS,range:[-0.5,KS.length-0.5],gridcolor:'#2b3949',fixedrange:true},AXL)},CFG);
 }
 function cellColor(lbl){
   const v=parseFloat(lbl);
@@ -402,21 +408,46 @@ function draw(){
   drawScaling(run); drawReach(run); drawTable(run);
   const q=run[metric][n];
   const toQ=toMarker(run.nat_to_k[n]!=null);
-  Plotly.react('qplot',['native','EAN','leveled'].map(a=>({x:xs,y:withCeiling(q[a]),mode:'lines+markers',name:a,connectgaps:false,line:{color:C[a],width:2.4},marker:{size:6}})),
-    Object.assign({},base,{shapes:toQ.shapes,annotations:toQ.annotations,yaxis:{title:'query time (ms, log)',type:'log',dtick:1,tickformat:'~s',gridcolor:'#2b3949',fixedrange:true}}),CFG);
-  const s=run.speedup[n], tk=run.nat_to_k[n];
-  const shapes=[{type:'line',x0:-0.4,x1:KS.length-0.6,y0:1,y1:1,line:{color:'#ffd43b',width:1.4,dash:'dash'}}], ann=[];
-  if(tk!==null&&tk!==undefined){const i=KS.indexOf(tk);
-    shapes.push({type:'rect',x0:i-0.5,x1:KS.length-0.5,y0:0,y1:1,yref:'paper',fillcolor:'rgba(255,107,107,0.10)',line:{width:0}});
-    ann.push({x:i+(KS.length-1-i)/2,y:0.93,yref:'paper',text:'native T.O. → ∞',showarrow:false,font:{color:'#ff6b6b',size:11}});}
-  Plotly.react('splot',['EAN','leveled'].map(a=>({x:xs,y:s[a],mode:'lines+markers',name:a,connectgaps:false,line:{color:C[a],width:2.4},marker:{size:6}})),
-    Object.assign({},base,{shapes:shapes,annotations:ann,yaxis:{title:'speedup (×, log)',type:'log',dtick:1,gridcolor:'#2b3949',fixedrange:true}}),CFG);
+  Plotly.react('qplot',['native','EAN','leveled'].map(a=>{const ch=ceilHover(q[a]);
+    return {x:xs,y:ch.y,text:ch.t,hovertemplate:'%{fullData.name}: %{text}<extra></extra>',
+    mode:'lines+markers',name:a,connectgaps:false,line:{color:C[a],width:2.4},marker:{size:6}};}),
+    Object.assign({},base,{shapes:toQ.shapes,annotations:toQ.annotations,yaxis:Object.assign({title:'query time (ms, log)',type:'log',dtick:1,tickformat:'~s',gridcolor:'#2b3949',fixedrange:true},AXL)}),CFG);
+  // Speedup encodes the per-cell OUTCOME by vertical position (since ∞ and T.O. aren't plottable
+  // numbers): finite speedup -> its value; ∞ (Native T.O., transform won) -> top INF line;
+  // any transform timeout/OOM -> bottom T.O. line. So a transform that dies is visibly pinned low.
+  const lab=run.label[n]||{EAN:[],leveled:[]};
+  const allL=[].concat(lab.EAN||[],lab.leveled||[]);
+  const hasInf=allL.some(l=>l==='∞');                              // any Native-T.O. win in this view
+  const hasFail=allL.some(l=>l&&isNaN(parseFloat(l))&&l!=='∞');    // any transform T.O./OOM in this view
+  const fin=allL.map(parseFloat).filter(v=>!isNaN(v)&&v>0);
+  const dMax=fin.length?Math.max(...fin):1, dMin=fin.length?Math.min(...fin):1;
+  const hiDec=Math.ceil(Math.log10(dMax)), loDec=Math.floor(Math.log10(dMin));
+  const INF_S=Math.pow(10,hiDec+1), FLR_S=Math.pow(10,loDec-1);   // a clean decade beyond the data
+  // y ticks: real decades for the finite data, plus ∞ / T.O. only when those outcomes occur here
+  const tvals=[], ttext=[];
+  for(let d=loDec; d<=hiDec; d++){const v=Math.pow(10,d); tvals.push(v); ttext.push(v>=1?String(v):v.toString());}
+  if(hasInf){tvals.push(INF_S); ttext.push('∞');}
+  if(hasFail){tvals.push(FLR_S); ttext.push('T.O.');}
+  const spY=ls=>(ls||[]).map(l=>{if(!l)return null;const v=parseFloat(l);
+    return (!isNaN(v)&&l!=='∞')?v:(l==='∞'?INF_S:FLR_S);});
+  const spT=ls=>(ls||[]).map(l=>{if(!l)return null;const v=parseFloat(l);
+    if(!isNaN(v)&&l!=='∞')return '×'+v.toFixed(2)+(v>=1?' (transform wins)':' (Native wins)');
+    if(l==='∞')return '∞ — Native timed out, transform succeeded';
+    if(l.indexOf('OOM')>=0)return l+' — out of memory';
+    return (l.indexOf('+')>=0?l+' — both timed out':l+' — transform timed out');});
+  // only the yellow break-even line; ∞ (top) and T.O. (floor) are shown as y-axis tick labels instead
+  const shapes=[{type:'line',x0:-0.4,x1:KS.length-0.6,y0:1,y1:1,line:{color:'#ffd43b',width:1.4,dash:'dash'}}];
+  const ann=[];
+  Plotly.react('splot',['EAN','leveled'].map(a=>({x:xs,y:spY(lab[a]),text:spT(lab[a]),
+    hovertemplate:'%{fullData.name}: %{text}<extra></extra>',mode:'lines+markers',name:a,connectgaps:false,
+    line:{color:C[a],width:2.4},marker:{size:7}})),
+    Object.assign({},base,{shapes:shapes,annotations:ann,yaxis:Object.assign({title:'speedup (×, log)',type:'log',tickmode:'array',tickvals:tvals,ticktext:ttext,gridcolor:'#2b3949',fixedrange:true},AXL)}),CFG);
   // build chart: only the transforms (Native pays no counted build); N as equal-spaced categories
   Plotly.react('bplot',['EAN','leveled'].map(a=>({x:DATA.ns.map(n=>n.toLocaleString()),y:run.build[a],type:'bar',name:a,marker:{color:C[a]}})),
     {paper_bgcolor:'#1a212b',plot_bgcolor:'#1a212b',font:{color:'#e6edf3',family:'Inter'},margin:{l:64,r:18,t:8,b:46},
      barmode:'group',dragmode:false,legend:{orientation:'h',y:1.13},
-     xaxis:{title:'N (nodes)',type:'category',gridcolor:'#2b3949',fixedrange:true},
-     yaxis:{title:'build time (ms, log)',type:'log',dtick:1,tickformat:'~s',gridcolor:'#2b3949',fixedrange:true}},CFG);
+     xaxis:Object.assign({title:'N (nodes)',type:'category',gridcolor:'#2b3949',fixedrange:true},AXL),
+     yaxis:Object.assign({title:'build time (ms, log)',type:'log',dtick:1,tickformat:'~s',gridcolor:'#2b3949',fixedrange:true},AXL)},CFG);
 }
 function coverage(){
   let h='<table><tr><th>engine \\ density</th>'+DATA.densities.map(d=>'<th>D='+d+'</th>').join('')+'</tr>';
