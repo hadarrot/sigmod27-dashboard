@@ -173,7 +173,8 @@
         </div>
         <div class="card">
           <h3>Speedup table (per cell)</h3>
-          <p>Exact per-cell outcome, like the paper's speedup table. <b>Green</b> = transform wins (&gt;1), <b>red</b> = Native wins (&lt;1), <b style="color:#51cf66">∞</b> = Native timed out / transform succeeded, <b style="color:#ffd43b">T.O.</b> = both timed out, <b style="color:#c56cff">OOM</b> = ran out of memory. <code>A+B</code> = transform+Native outcome.</p>
+          <p>Exact per-cell outcome. <b>Green</b> = transform wins (&gt;1), <b>red</b> = Native wins (&lt;1 or transform failed while Native ran), <b style="color:#51cf66">∞</b> = Native timed out / transform succeeded, <b style="color:#ffd43b">yellow</b> = both failed, <b style="color:#c56cff">purple</b> = ran out of memory.
+          Failure codes name the phase: <code>bTO</code>/<code>bOOM</code> = the <b>transformation (build)</b> timed out / OOM'd; <code>qTO</code>/<code>qOOM</code> = the <b>query</b> timed out / OOM'd. <code>X+Y</code> = transform outcome + Native outcome. Hover any cell for the full sentence.</p>
           <div id="sptable" class="sptable"></div>
         </div>
       </section>
@@ -375,6 +376,8 @@ function drawReach(run){
      xaxis:Object.assign({title:'N (nodes)',type:'category',gridcolor:'#2b3949',fixedrange:true},AXL),
      yaxis:Object.assign({title:'max reachable k',tickvals:xs,ticktext:KS,range:[-0.5,KS.length-0.5],gridcolor:'#2b3949',fixedrange:true},AXL)},CFG);
 }
+// Label grammar: number | ∞ | bTO/bOOM (build/transformation failed) | qTO/qOOM (query failed)
+//                | X+Y (both failed; Y = native TO/OOM)
 function cellColor(lbl){
   const v=parseFloat(lbl);
   if(!isNaN(v)&&lbl!=='∞'){
@@ -382,9 +385,22 @@ function cellColor(lbl){
     const t=Math.min(1,-Math.log10(v)/2);return ['rgba(255,107,107,'+(0.18+0.5*t).toFixed(2)+')','#0b0f14'];
   }
   if(lbl==='∞') return ['rgba(81,207,102,0.55)','#0b0f14'];     // native T.O., transform wins
-  const first=lbl.split('+')[0];                                 // transform's own outcome
-  if(first.indexOf('OOM')>=0) return ['rgba(197,108,255,0.45)','#ffffff'];   // OOM
-  return ['rgba(255,212,59,0.42)','#0b0f14'];                    // T.O. (both timed out)
+  if(lbl.indexOf('OOM')>=0) return ['rgba(197,108,255,0.50)','#ffffff'];     // any OOM -> purple
+  if(lbl.indexOf('+')>=0)   return ['rgba(255,212,59,0.42)','#0b0f14'];      // both failed -> yellow
+  return ['rgba(255,107,107,0.42)','#0b0f14'];                  // transform failed, native won -> red
+}
+// turn a label into a full human sentence (for hovers)
+function humanLabel(l){
+  if(!l) return '';
+  const v=parseFloat(l);
+  if(!isNaN(v)&&l!=='∞') return '×'+v.toFixed(2)+(v>=1?' — transform wins':' — Native wins');
+  if(l==='∞') return '∞ — Native timed out, transform succeeded';
+  const seg=l.split('+'), t=seg[0], nat=seg[1];
+  const phase=t[0]==='b'?'build (transformation)':'query';
+  const kind=t.indexOf('OOM')>=0?'ran out of memory':'timed out';
+  let s='transform '+phase+' '+kind;
+  if(nat) s+=' · Native also '+(nat.indexOf('OOM')>=0?'OOM':'timed out');
+  return s;
 }
 function drawTable(run){
   let h='<table class="sp"><tr><th class="rowh">N \\ k</th>'+KS.map(k=>'<th>'+k+'</th>').join('')+'</tr>';
@@ -394,7 +410,7 @@ function drawTable(run){
       const row=(run.label[String(n)]||{})[a]||[];
       h+='<tr><th class="rowh">'+Number(n).toLocaleString()+'</th>';
       KS.forEach((k,i)=>{const l=row[i];if(!l){h+='<td></td>';return;}const c=cellColor(l);
-        h+='<td style="background:'+c[0]+';color:'+c[1]+'">'+l+'</td>';});
+        h+='<td title="k='+k+': '+humanLabel(l)+'" style="background:'+c[0]+';color:'+c[1]+'">'+l+'</td>';});
       h+='</tr>';
     });
   });
@@ -427,14 +443,10 @@ function draw(){
   const tvals=[], ttext=[];
   for(let d=loDec; d<=hiDec; d++){const v=Math.pow(10,d); tvals.push(v); ttext.push(v>=1?String(v):v.toString());}
   if(hasInf){tvals.push(INF_S); ttext.push('∞');}
-  if(hasFail){tvals.push(FLR_S); ttext.push('T.O.');}
+  if(hasFail){tvals.push(FLR_S); ttext.push('T.O./OOM');}
   const spY=ls=>(ls||[]).map(l=>{if(!l)return null;const v=parseFloat(l);
     return (!isNaN(v)&&l!=='∞')?v:(l==='∞'?INF_S:FLR_S);});
-  const spT=ls=>(ls||[]).map(l=>{if(!l)return null;const v=parseFloat(l);
-    if(!isNaN(v)&&l!=='∞')return '×'+v.toFixed(2)+(v>=1?' (transform wins)':' (Native wins)');
-    if(l==='∞')return '∞ — Native timed out, transform succeeded';
-    if(l.indexOf('OOM')>=0)return l+' — out of memory';
-    return (l.indexOf('+')>=0?l+' — both timed out':l+' — transform timed out');});
+  const spT=ls=>(ls||[]).map(l=>l?humanLabel(l):null);
   // only the yellow break-even line; ∞ (top) and T.O. (floor) are shown as y-axis tick labels instead
   const shapes=[{type:'line',x0:-0.4,x1:KS.length-0.6,y0:1,y1:1,line:{color:'#ffd43b',width:1.4,dash:'dash'}}];
   const ann=[];
