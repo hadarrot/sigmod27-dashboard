@@ -211,8 +211,13 @@
             </div>
           </div>
           <div class="card">
+            <h3>Max reachable path length before timeout</h3>
+            <p>How far each approach gets before timing out (bar top = furthest path length k reached; no bar = times out before even k=2). On real data Native's reach collapses almost immediately, while the transforms reach unbounded.</p>
+            <div id="e2-rplot" class="plot"></div>
+          </div>
+          <div class="card">
             <h3>Speedup table (per cell)</h3>
-            <p>Exact per-cell outcome across both datasets. <b>Green</b> = transform wins (&gt;1), <b>red</b> = Native wins, <b style="color:#51cf66">∞</b> = Native timed out / transform succeeded, <b style="color:#ffd43b">yellow</b> = both failed, <b style="color:#c56cff">purple</b> = OOM. Hover any cell for the full sentence.</p>
+            <p>Exact per-cell outcome across both datasets. <b>Green</b> = transform wins (&gt;1), <b>red</b> = Native wins, <b style="color:#51cf66">∞</b> = Native timed out / transform succeeded, <b style="color:#ffd43b">yellow</b> = both failed, <b style="color:#c56cff">purple</b> = OOM. Failure codes name the phase: <code>bTO</code>/<code>bOOM</code> = the transform's <b>build</b> failed; <code>qTO</code>/<code>qOOM</code> = its <b>query</b> failed; <code>X+Y</code> = transform + Native. Hover any cell for the full sentence.</p>
             <div id="e2-sptable" class="sptable"></div>
           </div>
         </div>
@@ -558,6 +563,19 @@ function e2Build(){
      xaxis:Object.assign({type:'category',gridcolor:'#2b3949',fixedrange:true},AXL),
      yaxis:Object.assign({title:'build time (ms, log)',type:'log',dtick:1,tickformat:'~s',gridcolor:'#2b3949',fixedrange:true},AXL)},CFG);
 }
+function e2Reach(){
+  // bar height = (index of furthest k reached, from the trimmed-mean series) + 1
+  const BTC=DATA.bitcoin, names=BTC.order.map(ds=>BTC.meta[ds].name);
+  const H=arr=>reachIdx(arr)+1;
+  const HT=arr=>{const i=reachIdx(arr);return i<0?'no result (times out before k=2)':'reaches k='+KS[i];};
+  Plotly.react('e2-rplot',['native','EAN','leveled'].map(a=>({x:names,
+     y:BTC.order.map(ds=>H(BTC.runs[ds].qmean[a])),text:BTC.order.map(ds=>HT(BTC.runs[ds].qmean[a])),
+     textposition:'none',hovertemplate:'%{fullData.name}: %{text}<extra></extra>',type:'bar',name:a,marker:{color:C[a]}})),
+    {paper_bgcolor:'#1a212b',plot_bgcolor:'#1a212b',font:{color:'#e6edf3',family:'Inter'},margin:{l:78,r:18,t:8,b:46},
+     barmode:'group',dragmode:false,legend:{orientation:'h',y:1.13},
+     xaxis:Object.assign({type:'category',gridcolor:'#2b3949',fixedrange:true},AXL),
+     yaxis:Object.assign({title:'max reachable k',tickvals:xs.map(i=>i+1),ticktext:KS,range:[0,KS.length+0.5],gridcolor:'#2b3949',fixedrange:true},AXL)},CFG);
+}
 let e2cur=null;
 function e2Draw(){
   const BTC=DATA.bitcoin, run=BTC.runs[e2cur], m=BTC.meta[e2cur];
@@ -604,7 +622,7 @@ function renderE2(){
     box.appendChild(b);
   });
   e2cur=BTC.order[0];
-  e2Table(); e2Build(); e2Draw();
+  e2Table(); e2Build(); e2Reach(); e2Draw();
 }
 renderE2();
 coverage(); draw();
@@ -617,7 +635,7 @@ document.querySelectorAll('#nav a').forEach(a=>a.onclick=()=>{
   document.querySelectorAll('.view').forEach(s=>s.classList.toggle('show',s.id==='view-'+v));
   document.getElementById('topTitle').textContent=TITLES[v];
   if(v==='e1'){['qplot','splot','bplot','scplot','rplot'].forEach(id=>{try{Plotly.Plots.resize(id);}catch(e){}});}
-  if(v==='e2'){['e2-qplot','e2-splot','e2-bplot'].forEach(id=>{try{Plotly.Plots.resize(id);}catch(e){}});}
+  if(v==='e2'){['e2-qplot','e2-splot','e2-bplot','e2-rplot'].forEach(id=>{try{Plotly.Plots.resize(id);}catch(e){}});}
 });
 }
 var _s=document.createElement('script');_s.src='data.js?t='+Date.now();_s.onload=initDashboard;
