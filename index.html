@@ -476,7 +476,7 @@ function drawTable(run){
 }
 function draw(){
   const run=DATA.runs[key()], n=document.getElementById('nsel').value;
-  document.getElementById('ctx').textContent='· '+ENG_META[curEngine].name+' · density '+document.getElementById('den').value+' · N='+Number(n).toLocaleString()+' · '+(metric==='qmean'?'trimmed mean':'median')+' · '+(qmode==='qb'?'query + build':'query only');
+  document.getElementById('ctx').textContent='· '+ENG_META[curEngine].name+' · density '+document.getElementById('den').value+' · N='+Number(n).toLocaleString()+' · '+(metric==='qmean'?'trimmed mean':'median');
   ['qplot','splot','bplot','scplot','rplot'].forEach(id=>{const e=document.getElementById(id);e.className='plot';e.innerHTML='';});
   if(!run){['qplot','splot','bplot','scplot','rplot'].forEach(setTodo);document.getElementById('sptable').innerHTML='';return;}
   drawScaling(run); drawReach(run); drawTable(run);
@@ -603,7 +603,7 @@ function e2Reach(){
 let e2cur=null;
 function e2Draw(){
   const BTC=DATA.bitcoin, run=BTC.runs[e2cur], m=BTC.meta[e2cur];
-  document.getElementById('e2ctx').textContent='· '+m.name+' · N='+m.nodes.toLocaleString()+' · E='+m.edges.toLocaleString()+' · trimmed mean · '+(qmode==='qb'?'query + build':'query only');
+  document.getElementById('e2ctx').textContent='· '+m.name+' · N='+m.nodes.toLocaleString()+' · E='+m.edges.toLocaleString()+' · trimmed mean';
   // query time vs k
   const toQ=toMarker(run.nat_to_k!=null);
   Plotly.react('e2-qplot',['native','EAN','leveled'].map(a=>{
