@@ -73,9 +73,15 @@
   th,td{border-bottom:1px solid var(--line);padding:9px 12px;text-align:left}
   tr:last-child td{border-bottom:0}
   th{background:var(--panel2);color:var(--mut);font-weight:600}
-  .pill{padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600}
+  .pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap}
   .pill.done{background:rgba(81,207,102,.15);color:var(--ok)}
   .pill.todo{background:rgba(255,169,77,.15);color:var(--todo)}
+  .pill.prog{background:rgba(255,212,59,.15);color:var(--accent)}
+  tr.deadline td{background:rgba(255,107,107,.08)}
+  tr.deadline td:first-child{box-shadow:inset 3px 0 0 var(--native)}
+  .duekey{display:inline-block;background:rgba(255,107,107,.16);color:var(--native);font-weight:700;
+    padding:2px 9px;border-radius:7px;white-space:nowrap}
+  .duekey::before{content:'\25CF';font-size:9px;vertical-align:1px;margin-right:5px}
   .qcards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
   @media(max-width:900px){.qcards{grid-template-columns:1fr}}
   .q{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
@@ -104,8 +110,8 @@
       <div class="grouplabel">Experiments</div>
       <a data-view="e1" class="active"><span class="ico"></span><span class="lbl">E1 · Synthetic</span></a>
       <a data-view="e2"><span class="ico"></span><span class="lbl">E2 · Real-world</span></a>
-      <a data-view="coverage"><span class="ico"></span><span class="lbl">Coverage</span></a>
       <div class="grouplabel">Plan</div>
+      <a data-view="timeline"><span class="ico"></span><span class="lbl">Timeline</span></a>
       <a data-view="questions"><span class="ico"></span><span class="lbl">Research questions</span></a>
       <a data-view="settings"><span class="ico"></span><span class="lbl">Settings</span></a>
       <a data-view="reviewers"><span class="ico"></span><span class="lbl">Reviewer comments</span></a>
@@ -235,11 +241,21 @@
         </div>
       </section>
 
-      <!-- Coverage -->
-      <section class="view" id="view-coverage">
-        <h2 class="sec">Coverage — what's run vs TODO</h2>
-        <p class="seclead">Each (engine × density) cell of E1, plus the real-world experiment.</p>
-        <div class="card"><div id="cov"></div></div>
+      <!-- Timeline -->
+      <section class="view" id="view-timeline">
+        <h2 class="sec">Submission timeline</h2>
+        <p class="seclead" style="margin-bottom:6px">Milestones toward the SIGMOD&nbsp;'27 submission — abstract due Jul&nbsp;10, paper due Jul&nbsp;17 (12&nbsp;pp excl. references).</p>
+        <p class="seclead" style="display:flex;gap:8px;align-items:center;flex-wrap:nowrap"><span class="pill done">done</span><span class="pill prog">in progress</span><span class="pill todo">to do</span></p>
+        <table>
+          <tr><th style="width:42px">#</th><th>Milestone</th><th>Covers</th><th style="width:96px">Due</th><th style="width:108px">Status</th></tr>
+          <tr><td>1</td><td>Experiments run</td><td>E1 (Neo4j + Kùzu, D = 1/5/10, N = 10²–10⁶) and E2 (Bitcoin Alpha + OTC) executed.</td><td>Jun 20</td><td><span class="pill done">done</span></td></tr>
+          <tr><td>2</td><td>Scaffold ready and approved</td><td>Overleaf skeleton (bullets only)</td><td>Jun 27</td><td><span class="pill prog">in progress</span></td></tr>
+          <tr><td>3</td><td>Theory + transformations</td><td>Inexpressibility extension (how to change path-graph G so Ψ rejects it) · EAN dual-graph corollary (edge conditions inexpressible in G become node conditions in L(G)) · Chapter 3: EAN + Leveled with correctness proofs.</td><td>Jul 4</td><td><span class="pill prog">in progress</span></td></tr>
+          <tr><td>4</td><td>Experiments written</td><td>Write Chapter 5 setup + Chapter 6 results from the completed experiments.</td><td>Jul 7</td><td><span class="pill todo">to do</span></td></tr>
+          <tr class="deadline"><td>5</td><td>Submit abstract</td><td><b>Abstract deadline.</b></td><td><span class="duekey">Jul 10</span></td><td><span class="pill todo">to do</span></td></tr>
+          <tr><td>6</td><td>Complete filling</td><td>Bullets to sentences; all writing, storytelling and framing.</td><td>Jul 13</td><td><span class="pill todo">to do</span></td></tr>
+          <tr class="deadline"><td>7</td><td>Polish + submit paper</td><td>Trim to 12 pp (excl. refs), submit. <b>Paper deadline.</b></td><td><span class="duekey">Jul 17</span></td><td><span class="pill todo">to do</span></td></tr>
+        </table>
       </section>
 
       <!-- Questions -->
@@ -373,7 +389,7 @@ RETURN count(*)
 
 <script>
 const TITLES={e1:"E1 — Synthetic (gMark): break-even & EAN vs Leveled",
-  e2:"E2 — Real-world data (Bitcoin)",coverage:"Coverage",questions:"Research questions",
+  e2:"E2 — Real-world data (Bitcoin)",timeline:"Timeline",questions:"Research questions",
   settings:"Settings",reviewers:"Reviewer comments"};
 function initDashboard(){
 const C={native:'#ff6b6b',EAN:'#4dabf7',leveled:'#51cf66'};
@@ -522,14 +538,6 @@ function draw(){
      xaxis:Object.assign({title:'N (nodes)',type:'category',gridcolor:'#2b3949',fixedrange:true},AXL),
      yaxis:Object.assign({title:'build time (ms, log)',type:'log',dtick:1,tickformat:'~s',gridcolor:'#2b3949',fixedrange:true},AXL)},CFG);
 }
-function coverage(){
-  let h='<table><tr><th>engine \\ density</th>'+DATA.densities.map(d=>'<th>D='+d+'</th>').join('')+'</tr>';
-  DATA.engines.forEach(e=>{h+='<tr><th>'+e+'</th>';DATA.densities.forEach(d=>{const ok=DATA.available.includes(e+'|'+d);
-    h+='<td><span class="pill '+(ok?'done':'todo')+'">'+(ok?'done':'TODO')+'</span></td>';});h+='</tr>';});
-  const e2done=DATA.bitcoin&&DATA.bitcoin.status==='done';
-  h+='</table><p style="margin-top:12px;color:var(--mut)">E2 real-world (Bitcoin Alpha + OTC): <span class="pill '+(e2done?'done':'todo')+'">'+(e2done?'done':'TODO')+'</span></p>';
-  document.getElementById('cov').innerHTML=h;
-}
 
 const den=document.getElementById('den'),nsel=document.getElementById('nsel'),ksel=document.getElementById('ksel');
 // engine = segmented toggle with brand logos (native <select> can't hold images)
@@ -651,13 +659,12 @@ function renderE2(){
   e2cur=BTC.order[0];
   e2Table(); e2Build(); e2Reach(); e2Draw();
 }
-coverage(); draw();
+draw();
 
-// sidebar view switching
-document.querySelectorAll('#nav a').forEach(a=>a.onclick=()=>{
-  document.querySelectorAll('#nav a').forEach(x=>x.classList.remove('active'));
-  a.classList.add('active');
-  const v=a.dataset.view;
+// sidebar view switching — driven by the URL hash so each tab is shareable/bookmarkable
+function showView(v){
+  if(!TITLES[v]) v='e1';                       // unknown/empty hash → default tab
+  document.querySelectorAll('#nav a').forEach(x=>x.classList.toggle('active',x.dataset.view===v));
   document.querySelectorAll('.view').forEach(s=>s.classList.toggle('show',s.id==='view-'+v));
   document.getElementById('topTitle').textContent=TITLES[v];
   if(v==='e1'){['qplot','splot','bplot','scplot','rplot'].forEach(id=>{try{Plotly.Plots.resize(id);}catch(e){}});}
@@ -667,7 +674,12 @@ document.querySelectorAll('#nav a').forEach(a=>a.onclick=()=>{
     if(!e2rendered){renderE2(); e2rendered=true;}
     else ['e2-qplot','e2-splot','e2-bplot','e2-rplot'].forEach(id=>{try{Plotly.Plots.resize(id);}catch(e){}});
   }
-});
+}
+// clicking a tab just updates the hash; hashchange does the actual switch (so Back/Forward work too)
+document.querySelectorAll('#nav a').forEach(a=>a.onclick=e=>{e.preventDefault();location.hash=a.dataset.view;});
+function viewFromHash(){return showView((location.hash||'').replace(/^#/,''));}
+window.addEventListener('hashchange',viewFromHash);
+viewFromHash();   // honor the hash present on initial load (deep link)
 }
 var _s=document.createElement('script');_s.src='data.js?t='+Date.now();_s.onload=initDashboard;
 _s.onerror=function(){document.getElementById('qplot').innerHTML='<div class="nodata">Failed to load data.js</div>';};
