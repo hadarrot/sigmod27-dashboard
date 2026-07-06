@@ -53,12 +53,28 @@
   .toggle{padding:3px;display:inline-flex}
   .toggle button{background:none;border:0;color:var(--mut);cursor:pointer;padding:5px 12px;border-radius:7px;font-size:13px;font-family:'Inter';position:relative}
   .toggle button.on{background:var(--ean);color:#06121f;font-weight:600}
+  /* hardware switch (laptop live data vs moriah cluster) */
+  .topbar-head{display:block}
+  .hwswitch{display:flex;flex-direction:column;gap:6px;align-items:flex-start;margin-top:16px}
+  .hwswitch>label{color:var(--mut);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em}
+  .hwswitch .toggle button.on{background:var(--accent);color:#231a00}
+  .hwbanner{display:none;align-items:center;gap:10px;margin:16px 36px 0;padding:11px 18px;
+    background:rgba(255,212,59,.10);border:1px solid rgba(255,212,59,.35);border-radius:11px;
+    color:var(--ink);font-size:13.5px}
+  body.hw-moriah .hwbanner{display:flex}
+  body.hw-moriah .content{filter:grayscale(.55);opacity:.4;pointer-events:none;transition:filter .2s,opacity .2s}
+  .hwdot{width:9px;height:9px;border-radius:50%;background:var(--accent);flex-shrink:0;animation:hwpulse 1.4s infinite}
+  @keyframes hwpulse{0%,100%{opacity:.3}50%{opacity:1}}
   /* tooltip */
   .tip:hover::after{content:attr(data-tip);position:absolute;bottom:140%;left:50%;transform:translateX(-50%);
     background:#0b0f14;border:1px solid var(--line);color:var(--ink);padding:9px 11px;border-radius:9px;
     width:230px;font-size:12px;font-weight:400;line-height:1.45;z-index:20;box-shadow:0 8px 26px rgba(0,0,0,.5)}
   .tip:hover::before{content:'';position:absolute;bottom:140%;left:50%;transform:translate(-50%,9px);
     border:6px solid transparent;border-top-color:var(--line);z-index:20}
+  /* hardware tips: open below and left-aligned so they never clip at the top edge */
+  #hwtoggle .tip:hover::after{bottom:auto;top:150%;left:0;right:auto;transform:none}
+  #hwtoggle .tip:hover::before{bottom:auto;top:150%;left:16px;right:auto;transform:translateY(-9px);
+    border-top-color:transparent;border-bottom-color:var(--line)}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px 16px 9px;margin:16px 0}
   .card h3{margin:4px 6px 2px;font-size:16px;font-weight:600}
   .card p{margin:0 6px 12px;color:var(--mut);font-size:13px}
@@ -121,11 +137,26 @@
 
   <main>
     <div class="topbar">
-      <h1 id="topTitle">E1 — Synthetic (gMark): break-even &amp; EAN vs Leveled</h1>
-      <div class="sub">Query <em>“is there a path of length k where edge amounts strictly increase”</em> (Q_mono) under
-      <b style="color:var(--native)">Native</b> (generate-then-filter / RA),
-      <b style="color:var(--ean)">EAN</b> (edge→node), <b style="color:var(--leveled)">Leveled</b> (stages graph).
-      Speedup = Latency<sub>native</sub> / (Build + Query). 10 cold runs/query; 60&nbsp;s timeout.</div>
+      <div class="topbar-head">
+        <div class="topbar-txt">
+          <h1 id="topTitle">E1 — Synthetic (gMark): break-even &amp; EAN vs Leveled</h1>
+          <div class="sub">Query <em>“is there a path of length k where edge amounts strictly increase”</em> (Q_mono) under
+          <b style="color:var(--native)">Native</b> (generate-then-filter / RA),
+          <b style="color:var(--ean)">EAN</b> (edge→node), <b style="color:var(--leveled)">Leveled</b> (stages graph).
+          Speedup = Latency<sub>native</sub> / (Build + Query). 10 cold runs/query; 60&nbsp;s timeout.</div>
+        </div>
+        <div class="hwswitch">
+          <label>Hardware</label>
+          <span class="toggle" id="hwtoggle">
+            <button class="on tip" data-hw="laptop" data-tip="MacBook Air (Mac16,13) — 10 cores, 16 GB RAM. The machine the current results were measured on.">💻 MacBook&nbsp;Air · 16&nbsp;GB · 10c</button>
+            <button class="tip" data-hw="moriah" data-tip="HUJI moriah cluster, glacier node — 32 cores, 512 GB RAM, Linux x86-64. Re-run in progress.">🖥 Moriah · 512&nbsp;GB · 32c</button>
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="hwbanner" id="hwbanner">
+      <span class="hwdot"></span>
+      <span><b>Moriah cluster · 512&nbsp;GB · 32&nbsp;cores</b> — re-running the full E1/E2 suite now. These numbers will populate automatically once the job finishes. Showing placeholders until then.</span>
     </div>
 
     <div class="content">
@@ -680,6 +711,35 @@ document.querySelectorAll('#nav a').forEach(a=>a.onclick=e=>{e.preventDefault();
 function viewFromHash(){return showView((location.hash||'').replace(/^#/,''));}
 window.addEventListener('hashchange',viewFromHash);
 viewFromHash();   // honor the hash present on initial load (deep link)
+
+// hardware switch: swap the active dataset (laptop vs moriah cluster) live.
+// DATASETS is emitted by data.js keyed by hardware; each has identical shape, so we
+// mutate DATA in place and re-render. If a hardware has no data yet, we show the
+// "generating" banner + dim the charts (placeholder) instead of blanking them.
+(function(){
+  const HAVE=(typeof DATASETS!=='undefined')?DATASETS:{};
+  const btns=document.querySelectorAll('#hwtoggle button');
+  function apply(hw){
+    const has = !!HAVE[hw];
+    document.body.classList.toggle('hw-moriah', hw==='moriah' && !has);   // banner+dim only when data missing
+    btns.forEach(b=>b.classList.toggle('on',b.dataset.hw===hw));
+    try{localStorage.setItem('hw',hw);}catch(e){}
+    if(has){
+      Object.assign(DATA, HAVE[hw]);   // repoint the active dataset (shape is identical across hardware)
+      curEngine = DATA.engines.includes(curEngine)?curEngine:DATA.engines[0];
+      draw();                          // redraw E1
+      if(e2rendered){                  // redraw E2 if it was ever opened
+        const BTC=DATA.bitcoin;
+        if(BTC&&BTC.order&&BTC.order.length){ e2cur=BTC.order.includes(e2cur)?e2cur:BTC.order[0]; e2Table(); e2Build(); e2Reach(); e2Draw(); }
+      }
+    }
+  }
+  btns.forEach(b=>b.onclick=()=>apply(b.dataset.hw));
+  let saved=(typeof DEFAULT_HW!=='undefined'&&DEFAULT_HW)?DEFAULT_HW:'laptop';
+  try{saved=localStorage.getItem('hw')||saved;}catch(e){}
+  if(!HAVE[saved]) saved=(typeof DEFAULT_HW!=='undefined'&&DEFAULT_HW)?DEFAULT_HW:saved;
+  apply(saved);
+})();
 }
 var _s=document.createElement('script');_s.src='data.js?t='+Date.now();_s.onload=initDashboard;
 _s.onerror=function(){document.getElementById('qplot').innerHTML='<div class="nodata">Failed to load data.js</div>';};
