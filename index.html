@@ -285,8 +285,14 @@
         cited graph benchmark and the one R2 named. Subgraph: <i>person_knows_person</i>; the ordered edge value is
         <i>creationDate</i>, so the query asks for a <b>time-respecting chain of friendships</b>.</p>
 
-        <p class="seclead"><b>Why it matters.</b> SNB&rsquo;s own Interactive queries traverse one to three hops.
-        Native already fails inside that range, so the argument no longer needs long paths.</p>
+        <p class="seclead"><b>What this is and is not.</b> We run <b>our E2 query on SNB&rsquo;s graph</b> &mdash; not
+        SNB&rsquo;s own queries. Ours starts from <i>every</i> person and counts all reachable pairs; SNB&rsquo;s
+        Interactive queries start from a single <code>$personId</code>, apply date filters and <code>LIMIT 20</code>.
+        So the timeouts below are a property of the all-pairs query shape, not of the benchmark, and they are not
+        evidence that SNB&rsquo;s published queries time out &mdash; no one reports that, and they would not.
+        The claim they do support is narrower but still useful for R2.O3: at the <i>path lengths</i> SNB actually uses
+        (two to four hops), an all-pairs increasing-timestamp query is already infeasible natively, so the argument
+        does not need k=128. This matches E2 on Bitcoin, which uses the same all-sources shape.</p>
 
         <p class="seclead"><b>Hardware and engine.</b> Measured on the MacBook&nbsp;Air (Mac16,13, 10&nbsp;cores,
         16&nbsp;GB) with <b>Neo4j&nbsp;2025.10.1 Enterprise, 4&nbsp;GB heap, 4&nbsp;GB page cache, under
@@ -335,10 +341,9 @@
           <tr><th class="rowh">EAN</th><td style="background:transparent;color:#cdd6e0">42.9 s</td><td style="background:rgba(81,207,102,0.55);color:#0b0f14"><b>&infin;</b></td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td></tr>
         </table>
         </div>
-        <p class="seclead"><b>What the series shows.</b> Native&rsquo;s failure point moves steadily earlier as
-        the scale factor grows: <b>k=8</b> at SF0.1, <b>k=4</b> at SF0.3/SF1/SF3, and <b>k=2</b> at SF10. Since SNB&rsquo;s
-        own Interactive queries traverse one to three hops, Native fails <i>inside the benchmark&rsquo;s own query range</i>
-        &mdash; the argument no longer needs long paths.</p>
+        <p class="seclead"><b>What the series shows.</b> Native&rsquo;s failure point moves steadily earlier as the
+        scale factor grows: <b>k=8</b> at SF0.1, <b>k=4</b> at SF0.3/SF1/SF3, and <b>k=2</b> at SF10 &mdash; i.e. within
+        the two-to-four-hop range SNB queries operate in, for this all-pairs query.</p>
         <p class="seclead"><b>Where each transform wins.</b> Leveled dominates at the small scale factors, answering every
         length including the unbounded query at SF0.1 and SF0.3 (7.94&times; at SF0.1, k=4). From SF1 its build cost takes
         over &mdash; 140&nbsp;s, then 1,347&nbsp;s, then past the 1,800&nbsp;s budget at SF10, where it never builds at all.
