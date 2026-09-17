@@ -296,12 +296,20 @@
         the pinned engine before going into the paper.</p>
 
         <h3>Datasets</h3>
+        <p class="seclead">LDBC ships nine pre-generated Interactive&nbsp;v1 scale factors:
+        <b>0.1, 0.3, 1, 3, 10, 30, 100, 300, 1000</b>. We run the bottom five. The reason is not the laptop:
+        the <i>knows</i> subgraph gets <b>denser</b> as the scale factor grows (10.4 &rarr; 14 &rarr; 19.7 &rarr; ~23),
+        and E1 already shows the regime collapsing past density&nbsp;10. SF0.3 confirms it &mdash; Leveled itself
+        starts timing out where at SF0.1 it answered every length. Above SF10 every cell would be a timeout for every
+        approach, so the range stops where the signal is exhausted, not where the hardware is.
+        (SF30 is 7.5&nbsp;GB and SF100 is 25&nbsp;GB, which is a secondary limit.)</p>
         <table>
           <tr><th>Scale factor</th><th>Persons</th><th>knows edges</th><th>Density</th></tr>
           <tr><td>SF0.1</td><td>1,357</td><td>14,073</td><td>10.4</td></tr>
           <tr><td>SF0.3</td><td>3,200</td><td>44,760</td><td>14.0</td></tr>
           <tr><td>SF1</td><td>9,163</td><td>180,623</td><td>19.7</td></tr>
           <tr><td>SF3</td><td>~25,000</td><td>565,247</td><td>~23</td></tr>
+          <tr><td>SF10</td><td>pending</td><td>pending</td><td>pending</td></tr>
         </table>
 
         <h3>Results — speedup over Native (build + query)</h3>
@@ -322,6 +330,9 @@
           <tr><th class="rowh">Leveled</th><td style="background:transparent;color:#8b97a7">pending</td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td></tr>
           <tr><th class="rowh">EAN</th><td style="background:transparent;color:#8b97a7">pending</td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td></tr>
           <tr class="grouphdr"><td colspan="13"><i>SF3 — ~25,000 persons / 565,247 edges</i></td></tr>
+          <tr><th class="rowh">Leveled</th><td style="background:transparent;color:#8b97a7">pending</td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td></tr>
+          <tr><th class="rowh">EAN</th><td style="background:transparent;color:#8b97a7">pending</td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td></tr>
+          <tr class="grouphdr"><td colspan="13"><i>SF10 — pending</i></td></tr>
           <tr><th class="rowh">Leveled</th><td style="background:transparent;color:#8b97a7">pending</td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td></tr>
           <tr><th class="rowh">EAN</th><td style="background:transparent;color:#8b97a7">pending</td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td></tr>
         </table>
