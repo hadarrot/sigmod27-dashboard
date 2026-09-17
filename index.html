@@ -287,6 +287,14 @@
         <p class="seclead"><b>Why it matters.</b> SNB&rsquo;s own Interactive queries traverse one to three hops.
         Native already fails inside that range, so the argument no longer needs long paths.</p>
 
+        <p class="seclead"><b>Hardware and engine.</b> Measured on the MacBook&nbsp;Air (Mac16,13, 10&nbsp;cores,
+        16&nbsp;GB) only &mdash; <b>not re-run on Moriah</b>, so the hardware switch is hidden on this tab. Engine is
+        Neo4j&nbsp;2025.07.1 <b>Community</b>, whereas E1/E2 used 2025.10.1 <b>Enterprise</b> with a 4&nbsp;GB heap.
+        Community is faster than Enterprise on the deep variable-length query, so Native looks
+        <i>better</i> here than it would on the pinned configuration. These numbers are directionally solid and
+        validated for correctness, but are <b>not directly comparable</b> to the E1/E2 tables and should be re-run on
+        the pinned engine before going into the paper.</p>
+
         <h3>Datasets</h3>
         <table>
           <tr><th>Scale factor</th><th>Persons</th><th>knows edges</th><th>Density</th></tr>
@@ -320,7 +328,9 @@
         </div>
         <p class="seclead"><b>SF0.1.</b> Native times out at <b>k=8</b>. Leveled answers every length including
         the unbounded query and already wins outright at k=4. EAN fails alongside Native from k=8.</p>
-        <p class="seclead">SF0.3, SF1 and SF3 are running; rows fill in as they land.</p>
+        <p class="seclead"><b>Still outstanding:</b> SF0.3, SF1 and SF3 sweeps (running); SF10 (downloaded, not yet
+        run); a re-run on Neo4j&nbsp;2025.10.1 Enterprise; and a Moriah re-run if we want the same laptop-vs-cluster
+        cross-check E1/E2 had. Empty cells above are <i>not measured</i>, not failures.</p>
 
         <h3>Correctness</h3>
         <p class="seclead">The harness&rsquo;s <code>--validate</code> DP oracle assumes a small value domain
@@ -766,6 +776,10 @@ function showView(v){
   document.querySelectorAll('#nav a').forEach(x=>x.classList.toggle('active',x.dataset.view===v));
   document.querySelectorAll('.view').forEach(s=>s.classList.toggle('show',s.id==='view-'+v));
   document.getElementById('topTitle').textContent=TITLES[v];
+  // the hardware switch only drives the E1/E2 plots; hide it elsewhere so a
+  // static view (e.g. E3) can never appear under the wrong hardware label.
+  var _hw=document.querySelector('.hwswitch');
+  if(_hw) _hw.style.display=(v==='e1'||v==='e2')?'':'none';
   if(v==='e1'){['qplot','splot','bplot','scplot','rplot'].forEach(id=>{try{Plotly.Plots.resize(id);}catch(e){}});}
   // E2 plots must first render while their container is VISIBLE, or Plotly sizes them
   // to a fallback width and they overflow the card. Render lazily on first open, then resize.
