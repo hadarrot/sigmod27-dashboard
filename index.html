@@ -126,6 +126,7 @@
       <div class="grouplabel">Experiments</div>
       <a data-view="e1" class="active"><span class="ico"></span><span class="lbl">E1 · Synthetic</span></a>
       <a data-view="e2"><span class="ico"></span><span class="lbl">E2 · Real-world</span></a>
+      <a data-view="e3"><span class="ico"></span><span class="lbl">E3 · Real-world revision</span></a>
       <div class="grouplabel">Plan</div>
       <a data-view="timeline"><span class="ico"></span><span class="lbl">Timeline</span></a>
       <a data-view="questions"><span class="ico"></span><span class="lbl">Research questions</span></a>
@@ -273,6 +274,61 @@
       </section>
 
       <!-- Timeline -->
+      <!-- E3 -->
+      <section class="view" id="view-e3">
+        <h2 class="sec">E3 — Real-world revision: LDBC SNB</h2>
+        <p class="seclead">Added for the revision, answering R2.O3 (&ldquo;path lengths are large compared with
+        benchmarks such as LDBC SNB&rdquo;) and R4.O3 (&ldquo;only two Bitcoin trust networks&rdquo;). We run the
+        <b>unchanged E2 harness</b> on the
+        <a href="https://ldbcouncil.org/benchmarks/snb/">LDBC Social Network Benchmark</a> (Interactive v1), the most
+        cited graph benchmark and the one R2 named. Subgraph: <i>person_knows_person</i>; the ordered edge value is
+        <i>creationDate</i>, so the query asks for a <b>time-respecting chain of friendships</b>.</p>
+
+        <p class="seclead"><b>Why it matters.</b> SNB&rsquo;s own Interactive queries traverse one to three hops.
+        Native already fails inside that range, so the argument no longer needs long paths.</p>
+
+        <h3>Datasets</h3>
+        <table>
+          <tr><th>Scale factor</th><th>Persons</th><th>knows edges</th><th>Density</th></tr>
+          <tr><td>SF0.1</td><td>1,357</td><td>14,073</td><td>10.4</td></tr>
+          <tr><td>SF0.3</td><td>3,200</td><td>44,760</td><td>14.0</td></tr>
+          <tr><td>SF1</td><td>9,163</td><td>180,623</td><td>19.7</td></tr>
+          <tr><td>SF3</td><td>~25,000</td><td>565,247</td><td>~23</td></tr>
+        </table>
+
+        <h3>Results — speedup over Native (build + query)</h3>
+        <p class="seclead">Same layout as Table&nbsp;4 in the paper. The build column is the one-time build in
+        seconds; other columns give speedup over Native at each path length, computed using build&nbsp;+&nbsp;query.
+        Shaded cells are wins (speedup&nbsp;&ge;&nbsp;1), bold <b>&infin;</b> marks where Native timed out and the
+        transform succeeded, and T.O. marks where both timed out. 60&nbsp;s cap, 10 cold runs, trimmed mean.</p>
+        <div class="sptable">
+        <table class="sp">
+          <tr><th class="rowh"></th><th>build</th><th>2</th><th>4</th><th>8</th><th>16</th><th>32</th><th>64</th><th>128</th><th>256</th><th>512</th><th>1024</th><th>unb.</th></tr>
+          <tr class="grouphdr"><td colspan="13"><i>SF0.1 — 1,357 persons / 14,073 edges</i></td></tr>
+          <tr><th class="rowh">Leveled</th><td style="background:transparent;color:#cdd6e0">2.86</td><td style="background:rgba(255,107,107,0.30);color:#0b0f14">0.04</td><td style="background:rgba(81,207,102,0.32);color:#0b0f14">2.48</td><td style="background:rgba(81,207,102,0.55);color:#0b0f14"><b>&infin;</b></td><td style="background:rgba(81,207,102,0.55);color:#0b0f14"><b>&infin;</b></td><td style="background:rgba(81,207,102,0.55);color:#0b0f14"><b>&infin;</b></td><td style="background:rgba(81,207,102,0.55);color:#0b0f14"><b>&infin;</b></td><td style="background:rgba(81,207,102,0.55);color:#0b0f14"><b>&infin;</b></td><td style="background:rgba(81,207,102,0.55);color:#0b0f14"><b>&infin;</b></td><td style="background:rgba(81,207,102,0.55);color:#0b0f14"><b>&infin;</b></td><td style="background:rgba(81,207,102,0.55);color:#0b0f14"><b>&infin;</b></td><td style="background:rgba(81,207,102,0.55);color:#0b0f14"><b>&infin;</b></td></tr>
+          <tr><th class="rowh">EAN</th><td style="background:transparent;color:#cdd6e0">0.43</td><td style="background:rgba(255,107,107,0.30);color:#0b0f14">0.21</td><td style="background:rgba(81,207,102,0.32);color:#0b0f14">1.24</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td></tr>
+          <tr class="grouphdr"><td colspan="13"><i>SF0.3 — 3,200 persons / 44,760 edges</i></td></tr>
+          <tr><th class="rowh">Leveled</th><td style="background:transparent;color:#8b97a7">pending</td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td></tr>
+          <tr><th class="rowh">EAN</th><td style="background:transparent;color:#8b97a7">pending</td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td></tr>
+          <tr class="grouphdr"><td colspan="13"><i>SF1 — 9,163 persons / 180,623 edges</i></td></tr>
+          <tr><th class="rowh">Leveled</th><td style="background:transparent;color:#8b97a7">pending</td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td></tr>
+          <tr><th class="rowh">EAN</th><td style="background:transparent;color:#8b97a7">pending</td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td></tr>
+          <tr class="grouphdr"><td colspan="13"><i>SF3 — ~25,000 persons / 565,247 edges</i></td></tr>
+          <tr><th class="rowh">Leveled</th><td style="background:transparent;color:#8b97a7">pending</td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td></tr>
+          <tr><th class="rowh">EAN</th><td style="background:transparent;color:#8b97a7">pending</td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td><td style="background:transparent"></td></tr>
+        </table>
+        </div>
+        <p class="seclead"><b>SF0.1.</b> Native times out at <b>k=8</b>. Leveled answers every length including
+        the unbounded query and already wins outright at k=4. EAN fails alongside Native from k=8.</p>
+        <p class="seclead">SF0.3, SF1 and SF3 are running; rows fill in as they land.</p>
+
+        <h3>Correctness</h3>
+        <p class="seclead">The harness&rsquo;s <code>--validate</code> DP oracle assumes a small value domain
+        (Bitcoin has ~20 distinct ratings) and does not terminate on near-distinct timestamps, so correctness was
+        checked against an <b>independent oracle</b> written from the metric definition. At SF0.1 all three
+        approaches return exactly the ground truth: <b>161,191</b> pairs at k&le;2 and <b>454,433</b> at k&le;4.</p>
+      </section>
+
       <section class="view" id="view-timeline">
         <h2 class="sec">Submission timeline</h2>
         <p class="seclead" style="margin-bottom:6px">Milestones toward the SIGMOD&nbsp;'27 submission — abstract due Jul&nbsp;10, paper due Jul&nbsp;17 (12&nbsp;pp excl. references).</p>
@@ -285,7 +341,18 @@
           <tr><td>4</td><td>Experiments written</td><td>Write Chapter 5 setup + Chapter 6 results from the completed experiments.</td><td>Jul 7</td><td><span class="pill todo">to do</span></td></tr>
           <tr class="deadline"><td>5</td><td>Submit abstract</td><td><b>Abstract deadline.</b></td><td><span class="duekey">Jul 10</span></td><td><span class="pill todo">to do</span></td></tr>
           <tr><td>6</td><td>Complete filling</td><td>Bullets to sentences; all writing, storytelling and framing.</td><td>Jul 13</td><td><span class="pill todo">to do</span></td></tr>
-          <tr class="deadline"><td>7</td><td>Polish + submit paper</td><td>Trim to 12 pp (excl. refs), submit. <b>Paper deadline.</b></td><td><span class="duekey">Jul 17</span></td><td><span class="pill todo">to do</span></td></tr>
+          <tr class="deadline"><td>7</td><td>Polish + submit paper</td><td>Trim to 12 pp (excl. refs), submit. <b>Paper deadline.</b></td><td><span class="duekey">Jul 17</span></td><td><span class="pill done">done</span></td></tr>
+        </table>
+
+        <h3 style="margin-top:22px">Round 3 &mdash; after submission</h3>
+        <table>
+          <tr><th style="width:42px">#</th><th>Milestone</th><th>Covers</th><th style="width:96px">Due</th><th style="width:108px">Status</th></tr>
+          <tr><td>8</td><td>Abstract submission and COI declaration</td><td>Research paper submission round 3.</td><td>Jul 10, 2026</td><td><span class="pill done">done</span></td></tr>
+          <tr><td>9</td><td>Paper submission</td><td>Round 3 paper deadline.</td><td>Jul 17, 2026</td><td><span class="pill done">done</span></td></tr>
+          <tr class="deadline"><td>10</td><td>Author feedback phase</td><td>Two-page response, max 2 pp, same format, double-anonymous. Reviews: 2&times; Major Revision, 1&times; Minor Revision.</td><td><span class="duekey">Sep 10&ndash;17, 2026</span></td><td><span class="pill prog">in progress</span></td></tr>
+          <tr><td>11</td><td>Notification</td><td>Accept / reject / revision.</td><td>Oct 19, 2026</td><td><span class="pill todo">to do</span></td></tr>
+          <tr><td>12</td><td>Revised paper submission</td><td>E3 experiments, running example, update bounds, engine-feature table, scoping of path lengths.</td><td>Nov 19, 2026</td><td><span class="pill todo">to do</span></td></tr>
+          <tr class="deadline"><td>13</td><td>Final notification</td><td><b>Final accept / reject.</b></td><td><span class="duekey">Dec 12, 2026</span></td><td><span class="pill todo">to do</span></td></tr>
         </table>
       </section>
 
@@ -420,7 +487,8 @@ RETURN count(*)
 
 <script>
 const TITLES={e1:"E1 — Synthetic (gMark): break-even & EAN vs Leveled",
-  e2:"E2 — Real-world data (Bitcoin)",timeline:"Timeline",questions:"Research questions",
+  e2:"E2 — Real-world data (Bitcoin)",
+  e3:"E3 — Real-world revision (LDBC SNB)",timeline:"Timeline",questions:"Research questions",
   settings:"Settings",reviewers:"Reviewer comments"};
 function initDashboard(){
 const C={native:'#ff6b6b',EAN:'#4dabf7',leveled:'#51cf66'};
