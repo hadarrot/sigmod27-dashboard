@@ -301,15 +301,14 @@
 
         <h3>Datasets</h3>
         <p class="seclead">LDBC ships nine pre-generated Interactive&nbsp;v1 scale factors:
-        <b>0.1, 0.3, 1, 3, 10, 30, 100, 300, 1000</b>. We run the bottom five, and the stopping point is measured
-        rather than assumed. <b>Leveled</b> ends at SF10: its build already exceeds the 1,800&nbsp;s budget there
-        (3.4&nbsp;s &rarr; 15.9 &rarr; 140 &rarr; 1,347 &rarr; over budget). <b>EAN</b> survives longer but ends at
-        SF30: its k=2 query takes 3.2&nbsp;s at SF1, 14.7&nbsp;s at SF3 and 54.6&nbsp;s at SF10 &mdash; already 91% of
-        the 60&nbsp;s cap, and growing about 3.7&times; per step, so SF30 would land near 200&nbsp;s. <b>Native</b>
-        fails earliest, timing out at k=2 by SF10. Density also rises monotonically across the range
-        (10.4 &rarr; 31.1), which is what drives all three. Beyond SF10 the table would be empty for every approach,
-        so the range stops where the measurements do. (Size is a secondary limit: SF30 is 7.5&nbsp;GB, SF100 is
-        25&nbsp;GB.)</p>
+        <b>0.1, 0.3, 1, 3, 10, 30, 100, 300, 1000</b>. We ran upward until every approach failed, so the stopping
+        point is measured, not assumed. <b>SF10 is the last scale factor where anything answers</b> (EAN at k=2).
+        At <b>SF30</b> all three fail: Leveled&rsquo;s build runs <b>out of memory</b>, EAN builds in 124&nbsp;s but
+        its k=2 query times out, and Native times out. That matches the trend &mdash; EAN&rsquo;s k=2 query went
+        3.2&nbsp;s (SF1) &rarr; 14.7 (SF3) &rarr; 54.6 (SF10, 91% of the 60&nbsp;s cap) &rarr; timeout (SF30);
+        Leveled&rsquo;s build went 3.4&nbsp;s &rarr; 15.9 &rarr; 140 &rarr; 1,347 &rarr; over the 1,800&nbsp;s budget
+        (SF10) &rarr; OOM (SF30). Density rises monotonically throughout (10.4 &rarr; 38.2), which is what drives all
+        three. SF100 and above are being run to confirm, but cannot change the picture.</p>
         <table>
           <tr><th>Scale factor</th><th>Persons</th><th>knows edges</th><th>Density</th></tr>
           <tr><td>SF0.1</td><td>1,357</td><td>14,073</td><td>10.4</td></tr>
@@ -317,6 +316,7 @@
           <tr><td>SF1</td><td>9,163</td><td>180,623</td><td>19.7</td></tr>
           <tr><td>SF3</td><td>22,842</td><td>565,247</td><td>24.7</td></tr>
           <tr><td>SF10</td><td>62,371</td><td>1,938,516</td><td>31.1</td></tr>
+          <tr><td>SF30</td><td>157,444</td><td>6,017,657</td><td>38.2</td></tr>
         </table>
 
         <h3>Results — speedup over Native (build + query)</h3>
@@ -343,6 +343,9 @@
           <tr class="grouphdr"><td colspan="13"><i>SF10 — 62,371 persons / 1,938,516 edges (density 31.1)</i></td></tr>
           <tr><th class="rowh">Leveled</th><td style="background:transparent;color:#cdd6e0">build T.O.</td><td style="background:rgba(197,108,255,0.40);color:#ffffff">bT.O.</td><td style="background:rgba(197,108,255,0.40);color:#ffffff">bT.O.</td><td style="background:rgba(197,108,255,0.40);color:#ffffff">bT.O.</td><td style="background:rgba(197,108,255,0.40);color:#ffffff">bT.O.</td><td style="background:rgba(197,108,255,0.40);color:#ffffff">bT.O.</td><td style="background:rgba(197,108,255,0.40);color:#ffffff">bT.O.</td><td style="background:rgba(197,108,255,0.40);color:#ffffff">bT.O.</td><td style="background:rgba(197,108,255,0.40);color:#ffffff">bT.O.</td><td style="background:rgba(197,108,255,0.40);color:#ffffff">bT.O.</td><td style="background:rgba(197,108,255,0.40);color:#ffffff">bT.O.</td><td style="background:rgba(197,108,255,0.40);color:#ffffff">bT.O.</td></tr>
           <tr><th class="rowh">EAN</th><td style="background:transparent;color:#cdd6e0">42.9 s</td><td style="background:rgba(81,207,102,0.55);color:#0b0f14"><b>&infin;</b></td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td></tr>
+          <tr class="grouphdr"><td colspan="13"><i>SF30 — 157,444 persons / 6,017,657 edges (density 38.2)</i></td></tr>
+          <tr><th class="rowh">Leveled</th><td style="background:transparent;color:#cdd6e0">build OOM</td><td style="background:rgba(197,108,255,0.62);color:#ffffff">bOOM</td><td style="background:rgba(197,108,255,0.62);color:#ffffff">bOOM</td><td style="background:rgba(197,108,255,0.62);color:#ffffff">bOOM</td><td style="background:rgba(197,108,255,0.62);color:#ffffff">bOOM</td><td style="background:rgba(197,108,255,0.62);color:#ffffff">bOOM</td><td style="background:rgba(197,108,255,0.62);color:#ffffff">bOOM</td><td style="background:rgba(197,108,255,0.62);color:#ffffff">bOOM</td><td style="background:rgba(197,108,255,0.62);color:#ffffff">bOOM</td><td style="background:rgba(197,108,255,0.62);color:#ffffff">bOOM</td><td style="background:rgba(197,108,255,0.62);color:#ffffff">bOOM</td><td style="background:rgba(197,108,255,0.62);color:#ffffff">bOOM</td></tr>
+          <tr><th class="rowh">EAN</th><td style="background:transparent;color:#cdd6e0">123.9 s</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td><td style="background:rgba(255,212,59,0.42);color:#0b0f14">T.O.</td></tr>
         </table>
         </div>
         <p class="seclead"><b>What the series shows.</b> Native&rsquo;s failure point moves steadily earlier as the
