@@ -93,6 +93,7 @@
   .pill.done{background:rgba(81,207,102,.15);color:var(--ok)}
   .pill.todo{background:rgba(255,169,77,.15);color:var(--todo)}
   .pill.prog{background:rgba(255,212,59,.15);color:var(--accent)}
+  .pill.wait{background:rgba(139,151,167,.18);color:var(--mut)}
   tr.deadline td{background:rgba(255,107,107,.08)}
   tr.deadline td:first-child{box-shadow:inset 3px 0 0 var(--native)}
   .duekey{display:inline-block;background:rgba(255,107,107,.16);color:var(--native);font-weight:700;
@@ -366,14 +367,15 @@
         </table>
 
         <h3 style="margin-top:22px">Round 3 &mdash; after submission</h3>
+        <p class="seclead" style="display:flex;gap:8px;align-items:center;flex-wrap:nowrap"><span class="pill done">done</span><span class="pill prog">in progress</span><span class="pill todo">to do</span><span class="pill wait">waiting</span></p>
         <table>
           <tr><th style="width:42px">#</th><th>Milestone</th><th>Covers</th><th style="width:96px">Due</th><th style="width:108px">Status</th></tr>
           <tr><td>8</td><td>Abstract submission and COI declaration</td><td>Research paper submission round 3.</td><td>Jul 10, 2026</td><td><span class="pill done">done</span></td></tr>
           <tr><td>9</td><td>Paper submission</td><td>Round 3 paper deadline.</td><td>Jul 17, 2026</td><td><span class="pill done">done</span></td></tr>
-          <tr class="deadline"><td>10</td><td>Author feedback phase</td><td>Two-page response, max 2 pp, same format, double-anonymous. Reviews: 2&times; Major Revision, 1&times; Minor Revision.</td><td><span class="duekey">Sep 10&ndash;17, 2026</span></td><td><span class="pill prog">in progress</span></td></tr>
-          <tr><td>11</td><td>Notification</td><td>Accept / reject / revision.</td><td>Oct 19, 2026</td><td><span class="pill todo">to do</span></td></tr>
+          <tr class="deadline"><td>10</td><td>Author feedback phase</td><td>Two-page response, max 2 pp, same format, double-anonymous. Reviews: 2&times; Major Revision, 1&times; Minor Revision.</td><td><span class="duekey">Sep 10&ndash;17, 2026</span></td><td><span class="pill done">done</span></td></tr>
+          <tr><td>11</td><td>Notification</td><td>Accept / reject / revision. Nothing to do &mdash; waiting on the PC.</td><td>Oct 19, 2026</td><td><span class="pill wait">waiting</span></td></tr>
           <tr><td>12</td><td>Revised paper submission</td><td>E3 experiments, running example, update bounds, engine-feature table, scoping of path lengths.</td><td>Nov 19, 2026</td><td><span class="pill todo">to do</span></td></tr>
-          <tr class="deadline"><td>13</td><td>Final notification</td><td><b>Final accept / reject.</b></td><td><span class="duekey">Dec 12, 2026</span></td><td><span class="pill todo">to do</span></td></tr>
+          <tr class="deadline"><td>13</td><td>Final notification</td><td><b>Final accept / reject.</b> Nothing to do &mdash; waiting on the PC.</td><td><span class="duekey">Dec 12, 2026</span></td><td><span class="pill wait">waiting</span></td></tr>
         </table>
       </section>
 
