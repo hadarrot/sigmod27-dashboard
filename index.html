@@ -406,36 +406,34 @@
       <!-- Revision tasks -->
       <section class="view" id="view-revision">
         <h2 class="sec">Revision tasks &mdash; what we promised the reviewers</h2>
-        <p class="seclead">Every commitment in the author-feedback letter for paper&nbsp;1364, with where it currently
-        stands. Taken from the letter itself, one row per reviewer point, including the points where we argued rather
-        than promised a change so nothing looks overlooked.</p>
-        <p class="seclead"><b>Two files on purpose.</b> <i>Draft</i> is the working Overleaf project that holds every
-        change. <i>Revision</i> is the file that will actually be submitted, and by deliberate choice it currently
-        carries only the restored sentence (R2.M1) and the new experiments (R4.O3). The drafted items are written and
-        compiling, and are waiting on a decision to merge them across.</p>
+        <p class="seclead">Every commitment in the author-feedback letter for paper&nbsp;1364. One row per reviewer
+        point, including the two we answered in the letter without promising a change, so nothing looks overlooked.</p>
+        <p class="seclead"><b>Status means the submitted revision only.</b> A point counts as done when it is in the
+        revision file itself. Nine of the planned items already have text written in the working draft project, but
+        that is not the submission, so they stay planned until they are merged across.</p>
         <div style="display:flex;gap:10px 22px;flex-wrap:wrap;margin:2px 0 12px">
           <span><b>13</b> reviewer points</span>
-          <span><b>11</b> needed a change</span>
-          <span><b>11</b> drafted</span>
-          <span><b>2</b> merged into the revision</span>
+          <span><b>2</b> in the revision</span>
+          <span><b>9</b> planned</span>
+          <span><b>2</b> answered in the feedback</span>
         </div>
         <table>
-          <tr><th style="width:92px">Point</th><th>What we told the reviewers</th><th>What it is</th><th style="width:120px">Where</th><th style="width:150px">Status</th></tr>
-          <tr><td style="white-space:nowrap"><b>R1.O1, R1.M3</b></td><td>Extend the transfer-path example of Fig. 1 into a running example and carry it through the formal development.</td><td>Example in Preliminaries plus its leveled counterpart in Transformations.</td><td style="white-space:nowrap"><span class="pill prog">draft only</span></td><td style="white-space:nowrap"><span class="pill prog">drafted</span></td></tr>
-          <tr><td style="white-space:nowrap"><b>R1.O2</b></td><td>Make explicit as a corollary that several simultaneous local constraints compile into one leveled graph.</td><td>Corollary: local constraints are closed under conjunction.</td><td style="white-space:nowrap"><span class="pill prog">draft only</span></td><td style="white-space:nowrap"><span class="pill prog">drafted</span></td></tr>
-          <tr><td style="white-space:nowrap"><b>R1.O3</b></td><td>Add an explicit rule for choosing between the approaches in Section 8.</td><td>Explicit decision rule in the results section.</td><td style="white-space:nowrap"><span class="pill prog">draft only</span></td><td style="white-space:nowrap"><span class="pill prog">drafted</span></td></tr>
-          <tr><td style="white-space:nowrap"><b>R1.M1</b></td><td>No change promised — we argued that local relations <i>R</i> cover a broad class, and that post-filtering is exactly our Native baseline.</td><td>—</td><td style="white-space:nowrap"><span style="color:var(--mut)">&mdash;</span></td><td style="white-space:nowrap"><span class="pill done">no change</span></td></tr>
-          <tr><td style="white-space:nowrap"><b>R1.M2</b></td><td>Give explicit upper bounds for the cost of updating each compiled graph.</td><td>Proposition: EAN is O(1) per edge, Leveled O(1 + indeg(u)).</td><td style="white-space:nowrap"><span class="pill prog">draft only</span></td><td style="white-space:nowrap"><span class="pill prog">drafted</span></td></tr>
-          <tr><td style="white-space:nowrap"><b>R1.M4</b></td><td>Add a table summarising the engine capabilities each approach requires.</td><td>Engine-feature table (reachability vs quantified patterns).</td><td style="white-space:nowrap"><span class="pill prog">draft only</span></td><td style="white-space:nowrap"><span class="pill prog">drafted</span></td></tr>
-          <tr><td style="white-space:nowrap"><b>R2.O1</b></td><td>No change promised — we explained that the pushdown needs stateful traversal beyond current engines.</td><td>—</td><td style="white-space:nowrap"><span style="color:var(--mut)">&mdash;</span></td><td style="white-space:nowrap"><span class="pill done">no change</span></td></tr>
-          <tr><td style="white-space:nowrap"><b>R2.O2</b></td><td>Refers to R1.O2, plus the note that the size bounds do not mention the constraint.</td><td>Covered by the R1.O2 corollary.</td><td style="white-space:nowrap"><span class="pill prog">draft only</span></td><td style="white-space:nowrap"><span class="pill prog">drafted</span></td></tr>
-          <tr><td style="white-space:nowrap"><b>R2.O3</b></td><td>Distinguish the short-length range from the longer stress-test range and scope the practical claims accordingly.</td><td>Scoping paragraph, and E3 supplies the benchmark's own path lengths.</td><td style="white-space:nowrap"><span class="pill prog">draft + revision</span></td><td style="white-space:nowrap"><span class="pill prog">drafted + E3 in revision</span></td></tr>
-          <tr><td style="white-space:nowrap"><b>R2.M1</b></td><td>Fix the sentence truncated at the end of page 1.</td><td>Restored: &ldquo;&hellip; when this one-time compilation cost is justified.&rdquo;</td><td style="white-space:nowrap"><span class="pill done">revision</span></td><td style="white-space:nowrap"><span class="pill done">in revision</span></td></tr>
-          <tr><td style="white-space:nowrap"><b>R4.O1</b></td><td>Make the aggregate / global-constraint limitation explicit and leave it as future work.</td><td>Limitations paragraph in the conclusions.</td><td style="white-space:nowrap"><span class="pill prog">draft only</span></td><td style="white-space:nowrap"><span class="pill prog">drafted</span></td></tr>
-          <tr><td style="white-space:nowrap"><b>R4.O2</b></td><td>Clarify the required engine features (as R1.M4) and present the cluster rerun more prominently as a robustness check.</td><td>Engine-feature table plus a Robustness check heading.</td><td style="white-space:nowrap"><span class="pill prog">draft only</span></td><td style="white-space:nowrap"><span class="pill prog">drafted</span></td></tr>
-          <tr><td style="white-space:nowrap"><b>R4.O3</b></td><td>Add a real-world dataset from another application domain.</td><td>LDBC SNB (E3): six scale factors, Table 5 and Figure 6, all re-run and validated.</td><td style="white-space:nowrap"><span class="pill done">revision</span></td><td style="white-space:nowrap"><span class="pill done">in revision</span></td></tr>
+          <tr><th style="width:92px">Point</th><th>What we told the reviewers</th><th>What it is</th><th style="width:170px">Status</th></tr>
+          <tr><td style="white-space:nowrap"><b>R1.O1, R1.M3</b></td><td>Extend the transfer-path example of Fig. 1 into a running example and carry it through the formal development.</td><td>Example in Preliminaries plus its leveled counterpart in Transformations.</td><td style="white-space:nowrap"><span class="pill todo">planned</span></td></tr>
+          <tr><td style="white-space:nowrap"><b>R1.O2</b></td><td>Make explicit as a corollary that several simultaneous local constraints compile into one leveled graph.</td><td>Corollary: local constraints are closed under conjunction.</td><td style="white-space:nowrap"><span class="pill todo">planned</span></td></tr>
+          <tr><td style="white-space:nowrap"><b>R1.O3</b></td><td>Add an explicit rule for choosing between the approaches in Section 8.</td><td>Explicit decision rule in the results section.</td><td style="white-space:nowrap"><span class="pill todo">planned</span></td></tr>
+          <tr><td style="white-space:nowrap"><b>R1.M1</b></td><td>No change promised &mdash; we argued that local relations <i>R</i> cover a broad class, and that post-filtering is exactly our Native baseline.</td><td>&mdash;</td><td style="white-space:nowrap"><span class="pill done">answered in feedback</span></td></tr>
+          <tr><td style="white-space:nowrap"><b>R1.M2</b></td><td>Give explicit upper bounds for the cost of updating each compiled graph.</td><td>Proposition: EAN is O(1) per edge, Leveled O(1 + indeg(u)).</td><td style="white-space:nowrap"><span class="pill todo">planned</span></td></tr>
+          <tr><td style="white-space:nowrap"><b>R1.M4</b></td><td>Add a table summarising the engine capabilities each approach requires.</td><td>Engine-feature table (reachability vs quantified patterns).</td><td style="white-space:nowrap"><span class="pill todo">planned</span></td></tr>
+          <tr><td style="white-space:nowrap"><b>R2.O1</b></td><td>No change promised &mdash; we explained that the pushdown needs stateful traversal beyond current engines.</td><td>&mdash;</td><td style="white-space:nowrap"><span class="pill done">answered in feedback</span></td></tr>
+          <tr><td style="white-space:nowrap"><b>R2.O2</b></td><td>Refers to R1.O2, plus the note that the size bounds do not mention the constraint.</td><td>Covered by the R1.O2 corollary.</td><td style="white-space:nowrap"><span class="pill todo">planned</span></td></tr>
+          <tr><td style="white-space:nowrap"><b>R2.O3</b></td><td>Distinguish the short-length range from the longer stress-test range and scope the practical claims accordingly.</td><td>Scoping paragraph. E3 already supplies the benchmark's own path lengths, but the scoping text itself is not in yet.</td><td style="white-space:nowrap"><span class="pill todo">planned</span></td></tr>
+          <tr><td style="white-space:nowrap"><b>R2.M1</b></td><td>Fix the sentence truncated at the end of page 1.</td><td>Restored: &ldquo;&hellip; when this one-time compilation cost is justified.&rdquo;</td><td style="white-space:nowrap"><span class="pill done">in revision</span></td></tr>
+          <tr><td style="white-space:nowrap"><b>R4.O1</b></td><td>Make the aggregate / global-constraint limitation explicit and leave it as future work.</td><td>Limitations paragraph in the conclusions.</td><td style="white-space:nowrap"><span class="pill todo">planned</span></td></tr>
+          <tr><td style="white-space:nowrap"><b>R4.O2</b></td><td>Clarify the required engine features (as R1.M4) and present the cluster rerun more prominently as a robustness check.</td><td>Engine-feature table plus a Robustness check heading.</td><td style="white-space:nowrap"><span class="pill todo">planned</span></td></tr>
+          <tr><td style="white-space:nowrap"><b>R4.O3</b></td><td>Add a real-world dataset from another application domain.</td><td>LDBC SNB (E3): six scale factors, re-run and validated, with Table 5 and Figure 6.</td><td style="white-space:nowrap"><span class="pill done">in revision</span></td></tr>
         </table>
-        <p class="seclead" style="margin-top:12px"><b>Open decision.</b> Whether the nine draft-only items move into the
+        <p class="seclead" style="margin-top:12px"><b>Open decision.</b> Whether the nine planned items move into the
         submitted revision, or stay out to keep the page count down. The revision is already 14 body pages against a
         stated 12-page limit, and the original submission was 13.</p>
       </section>
