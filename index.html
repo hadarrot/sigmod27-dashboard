@@ -91,7 +91,7 @@
   th{background:var(--panel2);color:var(--mut);font-weight:600}
   .pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap}
   .pill.done{background:rgba(81,207,102,.15);color:var(--ok)}
-  .pill.todo{background:rgba(255,169,77,.15);color:var(--todo)}
+  .pill.todo{background:rgba(77,171,247,.16);color:#4dabf7}
   .pill.prog{background:rgba(255,212,59,.15);color:var(--accent)}
   .pill.wait{background:rgba(139,151,167,.18);color:var(--mut)}
   tr.deadline td{background:rgba(255,107,107,.08)}
@@ -442,17 +442,17 @@
 
       <section class="view" id="view-timeline">
         <h2 class="sec">Submission timeline</h2>
-        <p class="seclead" style="margin-bottom:6px">Milestones toward the SIGMOD&nbsp;'27 submission — abstract due Jul&nbsp;10, paper due Jul&nbsp;17 (12&nbsp;pp excl. references).</p>
+        <p class="seclead" style="margin-bottom:6px">Milestones toward the original SIGMOD&nbsp;'27 submission — abstract due Jul&nbsp;10, paper due Jul&nbsp;17 (12&nbsp;pp excl. references). <b>All complete</b>; everything since the submission is tracked under Round&nbsp;3 below.</p>
         <p class="seclead" style="display:flex;gap:8px;align-items:center;flex-wrap:nowrap"><span class="pill done">done</span><span class="pill prog">in progress</span><span class="pill todo">to do</span></p>
         <table>
           <tr><th style="width:42px">#</th><th>Milestone</th><th>Covers</th><th style="width:96px">Due</th><th style="width:108px">Status</th></tr>
           <tr><td>1</td><td>Experiments run</td><td>E1 (Neo4j + Kùzu, D = 1/5/10, N = 10²–10⁶) and E2 (Bitcoin Alpha + OTC) executed.</td><td>Jun 20</td><td><span class="pill done">done</span></td></tr>
-          <tr><td>2</td><td>Scaffold ready and approved</td><td>Overleaf skeleton (bullets only)</td><td>Jun 27</td><td><span class="pill prog">in progress</span></td></tr>
-          <tr><td>3</td><td>Theory + transformations</td><td>Inexpressibility extension (how to change path-graph G so Ψ rejects it) · EAN dual-graph corollary (edge conditions inexpressible in G become node conditions in L(G)) · Chapter 3: EAN + Leveled with correctness proofs.</td><td>Jul 4</td><td><span class="pill prog">in progress</span></td></tr>
-          <tr><td>4</td><td>Experiments written</td><td>Write Chapter 5 setup + Chapter 6 results from the completed experiments.</td><td>Jul 7</td><td><span class="pill todo">to do</span></td></tr>
-          <tr class="deadline"><td>5</td><td>Submit abstract</td><td><b>Abstract deadline.</b></td><td><span class="duekey">Jul 10</span></td><td><span class="pill todo">to do</span></td></tr>
-          <tr><td>6</td><td>Complete filling</td><td>Bullets to sentences; all writing, storytelling and framing.</td><td>Jul 13</td><td><span class="pill todo">to do</span></td></tr>
-          <tr class="deadline"><td>7</td><td>Polish + submit paper</td><td>Trim to 12 pp (excl. refs), submit. <b>Paper deadline.</b></td><td><span class="duekey">Jul 17</span></td><td><span class="pill done">done</span></td></tr>
+          <tr><td>2</td><td>Scaffold ready and approved</td><td>Overleaf skeleton (bullets only)</td><td>Jun 27</td><td><span class="pill done">done</span></td></tr>
+          <tr><td>3</td><td>Theory + transformations</td><td>Inexpressibility extension (how to change path-graph G so Ψ rejects it) · EAN dual-graph corollary (edge conditions inexpressible in G become node conditions in L(G)) · Chapter 3: EAN + Leveled with correctness proofs.</td><td>Jul 4</td><td><span class="pill done">done</span></td></tr>
+          <tr><td>4</td><td>Experiments written</td><td>Write Chapter 5 setup + Chapter 6 results from the completed experiments.</td><td>Jul 7</td><td><span class="pill done">done</span></td></tr>
+          <tr class="deadline"><td>5</td><td>Submit abstract</td><td><b>Abstract deadline.</b></td><td><span class="duekey">Jul 10</span></td><td><span class="pill done">done</span></td></tr>
+          <tr><td>6</td><td>Complete filling</td><td>Bullets to sentences; all writing, storytelling and framing.</td><td>Jul 13</td><td><span class="pill done">done</span></td></tr>
+          <tr class="deadline"><td>7</td><td>Polish + submit paper</td><td>Polish and submit. Went in at 13 body pages against the stated 12-page limit. <b>Paper deadline.</b></td><td><span class="duekey">Jul 17</span></td><td><span class="pill done">done</span></td></tr>
         </table>
 
         <h3 style="margin-top:22px">Round 3 &mdash; after submission</h3>
