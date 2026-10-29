@@ -226,10 +226,14 @@
         </div>
         <div class="card">
           <h3>Comparison with allReduce() on synthetic graphs (Neo4j)</h3>
-          <p>Every E1 configuration rerun with Cypher 25's <code>allReduce()</code> (same answers as Native, counts checked). Speedup = allReduce query / (Leveled build + query). Counting the build, allReduce is faster on the sparser graphs wherever both answer, and Leveled wins on dense graphs once paths are long. Figure: query time only, E1 at N=10<sup>4</sup>, D=1 and N=10<sup>3</sup>, D=10, plus Bitcoin Alpha.</p>
+          <p>Every E1 configuration rerun with Cypher 25's <code>allReduce()</code> (same answers as Native, counts checked). Speedup = allReduce query / (Leveled build + query). Counting the build, allReduce is faster on the sparser graphs wherever both answer, and Leveled wins on dense graphs once paths are long. The chart shows query time only (no build) for any density and size.</p>
           <table><tr><th>Density</th><th>cells where both answer</th><th>Leveled wins</th><th>Leveled vs allReduce (incl. build)</th><th>only Leveled answers</th><th>only allReduce answers</th></tr><tr><td>D=1</td><td>55</td><td>0</td><td>0.01 to 0.35</td><td>0</td><td>0</td></tr><tr><td>D=5</td><td>46</td><td>0</td><td>0.01 to 0.71</td><td>8</td><td>0</td></tr><tr><td>D=10</td><td>27</td><td>18</td><td>0.01 to 4.51</td><td>0</td><td>1</td></tr></table>
           <p style="margin-top:10px">The 8 cells only Leveled answers are N=10<sup>6</sup>, D=5, k&ge;8; the one only allReduce answers is N=10<sup>6</sup>, D=10, k=2, where the leveled build fails.</p>
-          <img src="allreduce_latency.png" alt="allReduce latency figure" style="width:100%;max-width:760px;background:#fff;border-radius:10px;margin:6px 0 8px">
+          <div class="controls" style="margin-top:6px">
+            <span><label>Density</label><span class="toggle" id="arD"><button class="on" data-d="1">D=1</button><button data-d="5">D=5</button><button data-d="10">D=10</button></span></span>
+            <span><label>Nodes</label><span class="toggle" id="arN"><button data-n="100">10²</button><button data-n="1000">10³</button><button class="on" data-n="10000">10⁴</button><button data-n="100000">10⁵</button><button data-n="1000000">10⁶</button></span></span>
+          </div>
+          <div id="ar-e1-plot" class="plot"></div>
         </div>
       </section>
 
@@ -349,11 +353,12 @@
         97&nbsp;GB of downloads &mdash; so those two rows carry over from the first run.</p>
 
         <h3>Query latency versus path length</h3>
-        <p class="seclead">One panel per scale factor, from the re-run's raw per-k latencies. Leveled stays flat and
+        <p class="seclead">Pick a scale factor, from the re-run's raw per-k latencies. Leveled stays flat and
         low across every length at SF0.1 and SF0.3 while Native and EAN hit the 60&nbsp;s cap within a few hops; as the
         scale factor grows every curve climbs to the cap and fewer lengths are answered, until at SF10 only EAN answers
         k=2.</p>
-        <img src="latency_vs_k_snb.png" alt="Query latency against path length for Native, EAN and Leveled, one panel per LDBC SNB scale factor" style="width:100%;max-width:1100px;border-radius:8px;background:#fff;padding:8px;margin:4px 0 14px">
+        <div class="controls"><span><label>Scale factor</label><span class="toggle" id="snbSF"><button class="on" data-sf="SF0.1">SF0.1</button><button data-sf="SF0.3">SF0.3</button><button data-sf="SF1">SF1</button><button data-sf="SF3">SF3</button><button data-sf="SF10">SF10</button><button data-sf="SF30">SF30</button></span></span></div>
+        <div class="card"><div id="snb-plot" class="plot"></div></div>
 
         <h3>Datasets</h3>
         <p class="seclead">LDBC ships nine pre-generated Interactive&nbsp;v1 scale factors:
@@ -966,6 +971,42 @@ viewFromHash();   // honor the hash present on initial load (deep link)
   apply(saved);
 })();
 }
+
+function initRevisionPlots(){
+  if(typeof REVISION==='undefined') return;
+  const KS=['2','4','8','16','32','64','128','256','512','1024','unb.'], xs=KS.map((_,i)=>i);
+  const COL={native:'#ff6b6b',EAN:'#4dabf7',ean:'#4dabf7',leveled:'#51cf66',allReduce:'#ffa94d'};
+  const NAME={native:'Native',EAN:'EAN',ean:'EAN',leveled:'Leveled',allReduce:'allReduce'};
+  const AX={color:'#9aa7b6',gridcolor:'#2b3949',zerolinecolor:'#2b3949'};
+  function draw(div,series){
+    const traces=Object.keys(series).filter(a=>series[a]).map(a=>({x:xs,y:series[a],name:NAME[a],mode:'lines+markers',
+      connectgaps:false,line:{color:COL[a],width:2.4},marker:{size:6},
+      hovertemplate:NAME[a]+': %{y:.1f} ms<extra></extra>'}));
+    Plotly.react(div,traces,{paper_bgcolor:'#1a212b',plot_bgcolor:'#1a212b',font:{color:'#e6edf3',family:'Inter'},
+      margin:{l:70,r:18,t:10,b:46},legend:{orientation:'h',y:1.12},hovermode:'x unified',dragmode:false,
+      shapes:[{type:'line',xref:'paper',x0:0,x1:1,y0:60000,y1:60000,line:{color:'#ff6b6b',width:1.2,dash:'dot'}}],
+      annotations:[{xref:'paper',x:0.01,y:Math.log10(60000),yref:'y',text:'T.O. (60 s)',showarrow:false,font:{color:'#ff6b6b',size:11},yanchor:'bottom',xanchor:'left'}],
+      xaxis:Object.assign({title:'path length k',tickvals:xs,ticktext:KS,fixedrange:true},AX),
+      yaxis:Object.assign({title:'query time (ms, log)',type:'log',dtick:1,tickformat:'~s',fixedrange:true},AX)},
+      {displayModeBar:false,responsive:true});
+  }
+  // E1: allReduce next to Native, EAN, Leveled
+  let D='1',N='10000';
+  function e1(){
+    const run=(DATASETS.laptop&&DATASETS.laptop.runs['neo4j|'+D])||{qmean:{}}; const q=run.qmean[N]||{};
+    draw('ar-e1-plot',{native:q.native,EAN:q.EAN,leveled:q.leveled,allReduce:(REVISION.allreduce.e1q[D]||{})[N]});
+  }
+  document.querySelectorAll('#arD button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#arD button').forEach(x=>x.classList.remove('on'));b.classList.add('on');D=b.dataset.d;e1();});
+  document.querySelectorAll('#arN button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#arN button').forEach(x=>x.classList.remove('on'));b.classList.add('on');N=b.dataset.n;e1();});
+  e1();
+  // E3: one scale factor at a time
+  let SF='SF0.1';
+  function e3(){ const t=REVISION.e3[SF]||{}; draw('snb-plot',{native:t.native,ean:t.ean,leveled:t.leveled}); }
+  document.querySelectorAll('#snbSF button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#snbSF button').forEach(x=>x.classList.remove('on'));b.classList.add('on');SF=b.dataset.sf;e3();});
+  e3();
+  // charts drawn while their tab was hidden get the right width once the tab is shown
+  window.addEventListener('hashchange',()=>setTimeout(()=>['ar-e1-plot','snb-plot'].forEach(id=>{const e=document.getElementById(id);if(e&&e.offsetParent)Plotly.Plots.resize(e);}),60));
+}
 // revision_data.js adds the revision datasets (CollegeMsg) to the laptop E2 view.
 function mergeRevision(){
   if(typeof REVISION==='undefined'||typeof DATASETS==='undefined'||!DATASETS.laptop) return;
@@ -981,7 +1022,7 @@ function mergeRevision(){
 }
 function loadRevision(){
   var r=document.createElement('script');r.src='revision_data.js?t='+Date.now();
-  r.onload=function(){mergeRevision();initDashboard();};r.onerror=initDashboard;
+  r.onload=function(){mergeRevision();initDashboard();initRevisionPlots();};r.onerror=initDashboard;
   document.head.appendChild(r);
 }
 var _s=document.createElement('script');_s.src='data.js?t='+Date.now();_s.onload=loadRevision;
