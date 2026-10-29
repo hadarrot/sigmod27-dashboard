@@ -224,6 +224,13 @@
           Failure codes name the phase: <code>bTO</code>/<code>bOOM</code> = the <b>transformation (build)</b> timed out / OOM'd; <code>qTO</code>/<code>qOOM</code> = the <b>query</b> timed out / OOM'd. <code>X+Y</code> = transform outcome + Native outcome. Hover any cell for the full sentence.</p>
           <div id="sptable" class="sptable"></div>
         </div>
+        <div class="card">
+          <h3>Comparison with allReduce() on synthetic graphs (Neo4j)</h3>
+          <p>Every E1 configuration rerun with Cypher 25's <code>allReduce()</code> (same answers as Native, counts checked). Speedup = allReduce query / (Leveled build + query). Counting the build, allReduce is faster on the sparser graphs wherever both answer, and Leveled wins on dense graphs once paths are long. Figure: query time only, E1 at N=10<sup>4</sup>, D=1 and N=10<sup>3</sup>, D=10, plus Bitcoin Alpha.</p>
+          <table><tr><th>Density</th><th>cells where both answer</th><th>Leveled wins</th><th>Leveled vs allReduce (incl. build)</th><th>only Leveled answers</th><th>only allReduce answers</th></tr><tr><td>D=1</td><td>55</td><td>0</td><td>0.01 to 0.35</td><td>0</td><td>0</td></tr><tr><td>D=5</td><td>46</td><td>0</td><td>0.01 to 0.71</td><td>8</td><td>0</td></tr><tr><td>D=10</td><td>27</td><td>18</td><td>0.01 to 4.51</td><td>0</td><td>1</td></tr></table>
+          <p style="margin-top:10px">The 8 cells only Leveled answers are N=10<sup>6</sup>, D=5, k&ge;8; the one only allReduce answers is N=10<sup>6</sup>, D=10, k=2, where the leveled build fails.</p>
+          <img src="allreduce_latency.png" alt="allReduce latency figure" style="width:100%;max-width:760px;background:#fff;border-radius:10px;margin:6px 0 8px">
+        </div>
       </section>
 
       <!-- E2 -->
@@ -244,6 +251,7 @@
               <span><span class="dot" style="background:var(--native)"></span>Native</span>
               <span><span class="dot" style="background:var(--ean)"></span>EAN</span>
               <span><span class="dot" style="background:var(--leveled)"></span>Leveled</span>
+              <span><span class="dot" style="background:#ffa94d"></span>allReduce</span>
             </span>
           </div>
           <div class="card">
@@ -289,6 +297,11 @@
               <tr><td>Leveled</td><td>5.41</td><td>0.16</td><td>3.78</td><td>8.35</td><td>8.30</td></tr>
             </table>
             <p style="margin-top:10px">allReduce is 8 to 10&times; faster than Native at k=2 but times out from k=8 on Bitcoin and from k=4 on CollegeMsg; Leveled answers every length, and even with its build is 4.9&times; and 4.3&times; faster than allReduce at k=4 on Alpha and OTC. On E1, counting the build, Leveled loses to allReduce at D=1 and D=5 wherever both answer (0.01 to 0.71) and wins at D=10 once paths are long (2.0 to 4.5&times; from k=8 or 16).</p>
+          </div>
+          <div class="card">
+            <h3>Execution plans: does allReduce prune?</h3>
+            <p>Neo4j <code>PROFILE</code> at k&le;2. On every profiled graph the allReduce predicate is evaluated inside the <code>Repeat</code> operator, so a path is dropped as soon as it stops increasing (far fewer database hits than Native). That operator still emits one row per increasing path: on the real graphs, whose query returns reachable pairs, that is more rows than answers, while on E1 the query counts the increasing paths themselves, so the two coincide. Leveled answers by reachability. Full plans: <code>results/allreduce/plans_full.txt</code> and <code>plans_all_full.txt</code> in the experiments repo.</p>
+            <table><tr><th>Graph</th><th>Native db hits</th><th>allReduce db hits</th><th>Leveled db hits</th><th>allReduce Repeat rows</th><th>answer</th></tr><tr><td>Bitcoin Alpha</td><td>8,947,007</td><td>3,296,419</td><td>1,692,985</td><td>351,815</td><td>257,647</td></tr><tr><td>Bitcoin OTC</td><td>16,338,321</td><td>5,905,319</td><td>2,855,360</td><td>591,532</td><td>450,919</td></tr><tr><td>CollegeMsg (days)</td><td>64,174,200</td><td>26,067,902</td><td>3,642,310</td><td>3,826,386</td><td>248,459</td></tr><tr><td>E1 N=10⁴, D=1</td><td>109,989</td><td>80,021</td><td>105,031</td><td>5,010</td><td>5,010</td></tr><tr><td>E1 N=10⁴, D=5</td><td>1,869,971</td><td>919,771</td><td>664,564</td><td>124,885</td><td>124,885</td></tr><tr><td>E1 N=10⁴, D=10</td><td>7,219,953</td><td>3,318,431</td><td>2,037,266</td><td>499,215</td><td>499,215</td></tr></table>
           </div>
         </div>
       </section>
@@ -631,7 +644,7 @@ const TITLES={e1:"E1 — Synthetic (gMark): break-even & EAN vs Leveled",
   e3:"E3 — LDBC SNB (recorded, not in the paper)",revision:"Revision tasks (author feedback)",timeline:"Timeline",questions:"Research questions",
   settings:"Settings",reviewers:"Reviewer comments"};
 function initDashboard(){
-const C={native:'#ff6b6b',EAN:'#4dabf7',leveled:'#51cf66'};
+const C={native:'#ff6b6b',EAN:'#4dabf7',leveled:'#51cf66',allReduce:'#ffa94d'};
 const KS=DATA.ks, xs=KS.map((_,i)=>i);
 let metric='qmean';
 let qmode='q';   // 'q' = query time only | 'qb' = query + one-time build cost (Native pays no build)
@@ -853,7 +866,7 @@ function e2Draw(){
   document.getElementById('e2ctx').textContent='· '+m.name+' · N='+m.nodes.toLocaleString()+' · E='+m.edges.toLocaleString()+' · trimmed mean';
   // query time vs k
   const toQ=toMarker(run.nat_to_k!=null);
-  Plotly.react('e2-qplot',['native','EAN','leveled'].map(a=>{
+  Plotly.react('e2-qplot',['native','EAN','leveled'].concat(run.qmean.allReduce?['allReduce']:[]).map(a=>{
     const bv=(qmode==='qb'&&a!=='native')?(run.build[a]||0):0;
     const ch=ceilHover(addBuild(run.qmean[a],bv));
     return {x:xs,y:ch.y,text:ch.t,hovertemplate:'%{fullData.name}: %{text}<extra></extra>',
@@ -960,6 +973,10 @@ function mergeRevision(){
     if(!B||B.order.includes('collegemsg')) return;
     const c=REVISION.collegemsg;
     B.order.push('collegemsg'); B.meta.collegemsg=c.meta; B.runs.collegemsg=c.run; B.datasets.push(c.label);
+  });
+  const AR=REVISION.allreduce&&REVISION.allreduce.e2;
+  if(AR) [DATASETS.laptop.bitcoin, DEFAULT_HW==='laptop'?DATA.bitcoin:null].forEach(B=>{
+    if(!B) return; Object.keys(AR).forEach(ds=>{ if(B.runs[ds]) B.runs[ds].qmean.allReduce=AR[ds]; });
   });
 }
 function loadRevision(){
